@@ -11,12 +11,3 @@
     }
   ]
 }
-```
-
-**④ 按「Commit changes」**
-
----
-
-Vercel 會自動重新部署，完成後試試看打開：
-```
-https://nulife-survey.vercel.app/sleep-survey
