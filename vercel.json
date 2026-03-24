@@ -1,13 +1,8 @@
 {
   "version": 2,
   "routes": [
-    {
-      "src": "/sleep-survey",
-      "dest": "/sleep-survey%20(1).html"
-    },
-    {
-      "src": "/",
-      "dest": "/sleep-survey%20(1).html"
-    }
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/sleep-survey", "dest": "/sleep-survey.html" },
+    { "src": "/immune-survey", "dest": "/immune-survey.html" }
   ]
 }
