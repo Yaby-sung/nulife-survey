@@ -1,15 +1,22 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
     {
       "src": "/sleep-survey",
-      "dest": "/sleep-survey (1).html"
+      "dest": "/sleep-survey%20(1).html"
+    },
+    {
+      "src": "/",
+      "dest": "/sleep-survey%20(1).html"
     }
   ]
 }
+```
+
+**④ 按「Commit changes」**
+
+---
+
+Vercel 會自動重新部署，完成後試試看打開：
+```
+https://nulife-survey.vercel.app/sleep-survey
