@@ -361,7 +361,12 @@ function showResult(data) {
   if (ctaResult) {
     ctaResult.innerHTML =
       '主類型：' + data.headline.primary + '<br>' +
-      '次類型：' + data.headline.secondary;
+      '次類型：' + data.headline.secondary + '<br><br>' +
+      '壓力型：'     + (s.stress       ?? '-') + ' 分<br>' +
+      '發炎型：'     + (s.inflammation ?? '-') + ' 分<br>' +
+      '結構耗損型：' + (s.structure    ?? '-') + ' 分<br>' +
+      '生活習慣型：' + (s.lifestyle    ?? '-') + ' 分<br>' +
+      '細胞抗氧化：' + (s.cell         ?? '-') + ' 分';
   }
 
   setTimeout(() => {
