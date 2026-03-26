@@ -1,121 +1,140 @@
 // ============================================================
-// 抗老研究室｜體態管理檢測
+// 抗老研究室｜體態管理檢測（v2）
 // Vercel Serverless Function: /api/survey/body.js
 // ============================================================
 
 const GROUPS = {
-  diet:     { questions: [1, 2, 3, 4],           max: 12 }, // 飲食熱量型
-  exercise: { questions: [5, 6, 7, 8],           max: 12 }, // 運動不足型
-  stress:   { questions: [9, 10, 11, 12],        max: 12 }, // 壓力型
-  insulin:  { questions: [13, 14, 15, 16],       max: 12 }, // 胰島素型
-  survival: { questions: [17, 18, 19, 20, 21],   max: 15 }, // 保命機制型
-  gene:     { questions: [22, 23, 24, 25],       max: 12 }, // 基因表現型
+  diet:     { questions: [1,2,3,4,5],     max: 15 },
+  exercise: { questions: [6,7,8,9,10],    max: 15 },
+  stress:   { questions: [11,12,13,14,15], max: 15 },
+  insulin:  { questions: [16,17,18,19,20], max: 15 },
+  survival: { questions: [21,22,23,24,25], max: 15 },
+  gene:     { questions: [26,27,28,29,30], max: 15 },
 };
-
-function getIntensity(score, max) {
-  const ratio = score / max;
-  if (ratio < 0.33) return "低影響";
-  if (ratio < 0.67) return "中影響";
-  return "高影響";
-}
 
 const TYPE_LABEL = {
-  diet:     "飲食熱量型",
-  exercise: "運動不足型",
-  stress:   "壓力型肥胖",
-  insulin:  "胰島素型",
-  survival: "保命機制型",
-  gene:     "基因表現型",
+  diet:     '飲食型（能量失衡）',
+  exercise: '運動型（代謝不足）',
+  stress:   '壓力型（荷爾蒙）',
+  insulin:  '胰島素型（血糖波動）',
+  survival: '保命機制型（節能模式）',
+  gene:     '基因表現型（代謝改變）',
 };
 
-const TRIGGER_MOMENTS = {
-  diet:     ["吃多了體重就上去", "偏好重口味、外食比例高", "蔬菜攝取不足、飲食結構不均衡"],
-  exercise: ["稍微活動就喘", "身體偏軟、缺乏肌肉感", "久坐久站、日常活動量低"],
-  stress:   ["壓力大就想吃東西", "情緒會直接影響飲食", "睡不好或容易焦慮"],
-  insulin:  ["吃完容易想睡", "很快又餓、血糖起伏大", "腹部脂肪特別明顯、很難瘦肚子"],
-  survival: ["吃很少但體重不動", "一吃多就很容易胖回來", "代謝慢、手腳冰冷"],
-  gene:     ["以前不容易胖，現在變容易", "體重增加集中在腹部", "運動或飲食效果不如以前"],
+const TYPE_DESC = {
+  diet: [
+    '你的狀態比較像：「能量輸入過多但用不掉」',
+    '✔ 吃多、重口味',
+    '✔ 容易累',
+    '✔ 蔬菜攝取不足',
+    '不是吃太多，是身體不會用',
+  ],
+  exercise: [
+    '你的狀態比較像：「燃燒能力不足」',
+    '✔ 久坐、易累',
+    '✔ 肌肉少',
+    '✔ 稍微動就喘',
+    '不是不努力，是燃燒引擎弱',
+  ],
+  stress: [
+    '你的狀態比較像：「壓力影響代謝」',
+    '✔ 壓力大容易暴食',
+    '✔ 睡不好',
+    '✔ 肚子容易囤脂',
+    '不是自制力差，是荷爾蒙在影響',
+  ],
+  insulin: [
+    '你的狀態比較像：「血糖波動大」',
+    '✔ 很快餓、飯後累',
+    '✔ 腹部脂肪明顯',
+    '✔ 體重容易上下',
+    '不是吃錯，是代謝在囤積',
+  ],
+  survival: [
+    '你的狀態比較像：「身體鎖住代謝」',
+    '✔ 吃少也不瘦',
+    '✔ 體重卡關',
+    '✔ 容易復胖',
+    '不是沒效，是身體在保護你',
+  ],
+  gene: [
+    '你的狀態比較像：「代謝模式改變」',
+    '✔ 以前不會胖，現在會',
+    '✔ 脂肪集中腹部',
+    '✔ 年紀增加後變難瘦',
+    '不是基因，是被生活打開',
+  ],
 };
 
-const COPY = {
-  overallStatus: [
-    "體重是結果",
-    "真正的關鍵是「代謝狀態」",
-  ],
-  recoveryAbility: [
-    "不是你不努力",
-    "是身體在「鎖住脂肪」",
-    "代謝回不來，再努力也很難突破",
-  ],
-  coreIssue: [
-    "你現在的問題不是減肥",
-    "是「代謝系統失衡」",
-    "不是你不努力，是身體在「鎖住脂肪」",
-  ],
-  layers: [
-    { title: "細胞修復層（能量）",   description: "細胞能量不足，代謝自然下降" },
-    { title: "發炎與血糖層",         description: "慢性發炎與血糖不穩會鎖住脂肪" },
-    { title: "壓力與荷爾蒙層",       description: "壓力荷爾蒙直接影響脂肪囤積" },
-    { title: "肌肉與代謝層",         description: "肌肉量決定基礎代謝率" },
-    { title: "生活習慣層",           description: "作息、飲食、壓力節奏" },
-  ],
-  brandClosing: [
-    "體態不是靠意志力撐",
-    "是讓代謝回到正常節奏",
-    "當身體穩定了，體態自然會跟著改變",
-  ],
-  lineCallToAction: [
-    "如果你看到這裡，其實你已經知道",
-    "你不是單純胖",
-    "我可以幫你整理一個「比較適合你的調整順序」",
-    "直接把結果複製傳LINE給我就好",
-  ],
+const LEVEL_MAP = {
+  diet:     { lv: 'Lv5｜生活習慣層',     desc: '飲食結構與能量輸入是體態的直接影響層，需要從飲食節奏調整起。' },
+  exercise: { lv: 'Lv4｜肌肉與代謝層',   desc: '肌肉量決定基礎代謝率，運動不足讓燃燒引擎持續弱化。' },
+  stress:   { lv: 'Lv3｜壓力與荷爾蒙層', desc: '壓力荷爾蒙直接影響脂肪囤積與代謝節奏，是最需要穩定的層面。' },
+  insulin:  { lv: 'Lv2｜血糖與發炎層',   desc: '血糖波動讓身體持續囤積脂肪，需要從飲食節奏與抗發炎著手。' },
+  survival: { lv: 'Lv1｜細胞修復層',     desc: '長期節食讓細胞進入節能保護模式，代謝恢復需要從基底重建。' },
+  gene:     { lv: 'Lv1｜細胞修復層',     desc: '代謝模式改變源自細胞層面的變化，需要從根本修復代謝能力。' },
 };
 
 module.exports = async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+  if (req.method !== 'POST') return res.status(405).end();
 
   const { answers, email } = req.body;
 
-  // 各組加總
   const scores = {};
   for (const [group, { questions }] of Object.entries(GROUPS)) {
     scores[group] = questions.reduce((sum, q) => sum + (answers[q] ?? 0), 0);
   }
 
-  // 排序找主次類型
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   const [primaryKey, primaryScore]     = sorted[0];
   const [secondaryKey, secondaryScore] = sorted[1];
+  const isDualPrimary = (primaryScore - secondaryScore) < 3;
 
-  // 強度
-  const intensity = {};
-  for (const [k, { max }] of Object.entries(GROUPS)) {
-    intensity[k] = getIntensity(scores[k], max);
-  }
+  const layers = [
+    { lv: LEVEL_MAP[primaryKey].lv + '（主）',   desc: LEVEL_MAP[primaryKey].desc },
+    { lv: LEVEL_MAP[secondaryKey].lv + '（次）', desc: LEVEL_MAP[secondaryKey].desc },
+    { lv: 'Lv1｜細胞修復層（基底）',             desc: '代謝能不能恢復，根本在細胞修復力，需要優先補足。' },
+  ];
 
   const result = {
     headline: {
-      primary:   TYPE_LABEL[primaryKey],
-      secondary: TYPE_LABEL[secondaryKey],
-      template:  `你的體態狀況偏向：「${TYPE_LABEL[primaryKey]}」，並伴隨 ${TYPE_LABEL[secondaryKey]} 的影響`,
+      primary:      TYPE_LABEL[primaryKey],
+      secondary:    TYPE_LABEL[secondaryKey],
+      isDualPrimary,
     },
     scores,
-    intensity,
-    overallStatus:   COPY.overallStatus,
-    lifeSituation: {
-      dailyState:      ["體重不太好控制", "吃多或吃少都會影響"],
-      triggerMoments:  TRIGGER_MOMENTS[primaryKey],
-      recoveryAbility: COPY.recoveryAbility,
-    },
-    coreIssue:        COPY.coreIssue,
-    layers:           COPY.layers,
-    brandClosing:     COPY.brandClosing,
-    lineCallToAction: COPY.lineCallToAction,
+    opening: [
+      '我看了你的測試結果',
+      '你的體態狀態偏向：「' + TYPE_LABEL[primaryKey] + '」',
+      '並伴隨部分「' + TYPE_LABEL[secondaryKey] + '」的影響',
+      '其實你的狀態，不是單純「瘦不下來」',
+      '身體正在用現在的模式運作',
+      '體重是結果，真正的關鍵是身體的代謝系統',
+    ],
+    typeDesc: TYPE_DESC[primaryKey],
+    situation: [
+      '☀️ 白天：容易累、想吃東西、精神不穩',
+      '🌙 晚上：想吃高熱量、控制不了',
+      '📉 長期：體重卡住，或反覆上下',
+      '其實都是身體在失衡',
+    ],
+    layers,
+    coreIssue: [
+      '你現在的問題不是吃太多、動太少',
+      '而是：身體沒有回到「正常燃燒模式」',
+      '不是你瘦不下來，是身體還沒準備好變瘦',
+    ],
+    adjustDirection: [
+      '① 從「基礎代謝修復」開始 → 讓身體能運作',
+      '② 從「血糖／壓力調整」開始 → 讓脂肪不再囤積',
+      '你比較有感的是哪一個？',
+    ],
+    lineCallToAction: [
+      '你這次的結果，主要是「' + TYPE_LABEL[primaryKey] + '＋' + TYPE_LABEL[secondaryKey] + '」',
+      '通常會有兩個調整方向',
+      '直接把結果複製傳LINE給我就好',
+    ],
   };
-
-  // await sendEmail(email, result);
-  // await saveResult({ email, scores, primaryKey, secondaryKey });
 
   return res.status(200).json(result);
 };
