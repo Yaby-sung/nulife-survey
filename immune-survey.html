@@ -7,401 +7,89 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --bg3: #1a2236;
-    --card: #151d2e;
-    --border: #1e2d45;
-    --accent: #7eb8f7;
-    --accent2: #a78bfa;
-    --gold: #e2b96f;
-    --text: #e8edf5;
-    --text2: #8a9bbf;
-    --text3: #4a5a7a;
-    --radius: 16px;
+    --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2236; --card: #151d2e;
+    --border: #1e2d45; --accent: #7eb8f7; --accent2: #a78bfa;
+    --gold: #e2b96f; --text: #e8edf5; --text2: #8a9bbf; --text3: #4a5a7a; --radius: 16px;
   }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans TC', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(126,184,247,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrap {
-    position: relative;
-    z-index: 1;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 0 20px 80px;
-  }
-
-  .hero {
-    width: 100%;
-    max-width: 680px;
-    margin: 0 auto;
-    display: block;
-    border-radius: 0 0 24px 24px;
-    object-fit: cover;
-    max-height: 420px;
-  }
-
-  .header {
-    text-align: center;
-    padding: 28px 0 32px;
-  }
-
-  .survey-title {
-    font-family: 'Noto Serif TC', serif;
-    font-size: clamp(22px, 5vw, 30px);
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-
-  .survey-sub {
-    font-size: 14px;
-    color: var(--text2);
-    letter-spacing: 1px;
-  }
-
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 50% at 20% 20%, rgba(126,184,247,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+  .wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 0 20px 80px; }
+  .hero { width: 100%; max-width: 680px; margin: 0 auto; display: block; border-radius: 0 0 24px 24px; object-fit: cover; max-height: 420px; }
+  .header { text-align: center; padding: 28px 0 32px; }
+  .survey-title { font-family: 'Noto Serif TC', serif; font-size: clamp(22px, 5vw, 30px); font-weight: 600; line-height: 1.4; color: var(--text); margin-bottom: 12px; }
+  .survey-sub { font-size: 14px; color: var(--text2); letter-spacing: 1px; }
   .progress-wrap { margin-bottom: 32px; }
-
-  .progress-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .progress-label { font-size: 12px; color: var(--text3); letter-spacing: 1px; }
   .progress-count { font-size: 12px; color: var(--accent); font-weight: 500; }
-
-  .progress-bar {
-    height: 2px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-    transition: width 0.5s cubic-bezier(.4,0,.2,1);
-  }
-
-  .q-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 16px;
-    transition: border-color 0.3s;
-    animation: fadeUp 0.4s ease both;
-  }
-
+  .progress-bar { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 16px; transition: border-color 0.3s; animation: fadeUp 0.4s ease both; }
   .q-card:hover { border-color: #2a3f60; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .q-card:nth-child(1) { animation-delay: 0.05s; }
-  .q-card:nth-child(2) { animation-delay: 0.10s; }
-  .q-card:nth-child(3) { animation-delay: 0.15s; }
-  .q-card:nth-child(4) { animation-delay: 0.20s; }
-  .q-card:nth-child(5) { animation-delay: 0.25s; }
-  .q-card:nth-child(6) { animation-delay: 0.30s; }
-  .q-card:nth-child(7) { animation-delay: 0.35s; }
-  .q-card:nth-child(8) { animation-delay: 0.40s; }
-  .q-card:nth-child(9) { animation-delay: 0.45s; }
-
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   .q-num { font-size: 11px; color: var(--text3); letter-spacing: 2px; margin-bottom: 10px; }
   .q-text { font-size: 16px; line-height: 1.6; color: var(--text); margin-bottom: 20px; }
-
-  .q-options {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-  }
-
-  .opt-btn {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text2);
-  }
-
+  .q-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .opt-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: var(--text2); }
   .opt-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(126,184,247,0.06); }
   .opt-btn.selected { background: rgba(126,184,247,0.12); border-color: var(--accent); color: var(--accent); }
-
-  .opt-label {
-    font-size: 13px;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-weight: 400;
-    letter-spacing: 1px;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  .email-section {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.4s ease 0.5s both;
-  }
-
+  .opt-label { font-size: 13px; font-family: 'Noto Sans TC', sans-serif; font-weight: 400; letter-spacing: 1px; text-align: center; line-height: 1.5; }
+  .email-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 24px; }
   .email-label { font-size: 13px; color: var(--text2); margin-bottom: 12px; display: block; }
   .email-note { font-size: 11px; color: var(--text3); margin-top: 8px; }
-
-  .email-input {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
+  .email-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
   .email-input:focus { border-color: var(--accent); }
   .email-input::placeholder { color: var(--text3); }
-
-  .submit-btn {
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-    border: none;
-    border-radius: var(--radius);
-    padding: 18px;
-    color: #0a0e1a;
-    font-size: 15px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: opacity 0.2s, transform 0.1s;
-    animation: fadeUp 0.4s ease 0.55s both;
-  }
-
+  .submit-btn { width: 100%; background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); border: none; border-radius: var(--radius); padding: 18px; color: #0a0e1a; font-size: 15px; font-weight: 500; font-family: inherit; cursor: pointer; letter-spacing: 1px; transition: opacity 0.2s, transform 0.1s; }
   .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
   #loading { display: none; text-align: center; padding: 80px 20px; }
-
-  .spinner {
-    width: 40px; height: 40px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 20px;
-  }
-
+  .spinner { width: 40px; height: 40px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; color: var(--text2); letter-spacing: 1px; }
-
   #result { display: none; }
-
-  .result-header {
-    text-align: center;
-    padding: 48px 0 36px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }
-
+  .result-header { text-align: center; padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
   .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 16px; }
-
-  .result-title {
-    font-family: 'Noto Serif TC', serif;
-    font-size: clamp(24px, 6vw, 36px);
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
+  .result-title { font-family: 'Noto Serif TC', serif; font-size: clamp(24px, 6vw, 36px); font-weight: 600; line-height: 1.3; margin-bottom: 8px; background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   .result-secondary { font-size: 14px; color: var(--text2); margin-top: 12px; }
   .result-secondary strong { color: var(--accent2); font-weight: 500; }
-
-  .scores-wrap {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-
+  .scores-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
   .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .score-row:last-child { margin-bottom: 0; }
   .score-name { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; }
-
-  .score-track {
-    flex: 1; height: 4px;
-    background: var(--bg3);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
+  .score-track { flex: 1; height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
   .score-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.4,0,.2,1); }
   .score-fill.stress       { background: linear-gradient(90deg, #7eb8f7, #a78bfa); }
   .score-fill.inflammation { background: linear-gradient(90deg, #f97316, #ef4444); }
   .score-fill.structure    { background: linear-gradient(90deg, #4ade80, #06b6d4); }
   .score-val { font-size: 12px; color: var(--text3); width: 36px; text-align: right; flex-shrink: 0; }
-
-  .r-block {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px 28px;
-    margin-bottom: 16px;
-  }
-
-  .r-block-title {
-    font-size: 11px; letter-spacing: 2px; color: var(--text3);
-    text-transform: uppercase; margin-bottom: 14px;
-    padding-bottom: 12px; border-bottom: 1px solid var(--border);
-  }
-
-  .r-line {
-    font-size: 14px; color: var(--text2);
-    line-height: 1.8; padding: 4px 0;
-    display: flex; align-items: flex-start; gap: 10px;
-  }
-
+  .r-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px; }
+  .r-block-title { font-size: 11px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .r-line { font-size: 14px; color: var(--text2); line-height: 1.8; padding: 4px 0; display: flex; align-items: flex-start; gap: 10px; }
   .r-line::before { content: '—'; color: var(--text3); flex-shrink: 0; margin-top: 1px; }
-
-  .r-core {
-    background: linear-gradient(135deg, rgba(126,184,247,0.08), rgba(167,139,250,0.08));
-    border-color: rgba(126,184,247,0.25);
-  }
-
+  .r-core { background: linear-gradient(135deg, rgba(126,184,247,0.08), rgba(167,139,250,0.08)); border-color: rgba(126,184,247,0.25); }
   .r-core .r-line { color: var(--text); }
-
   .r-brand { border-color: rgba(226,185,111,0.2); }
   .r-brand .r-block-title { color: var(--gold); opacity: 0.7; }
   .r-brand .r-line { color: var(--text2); font-style: italic; }
-
-  .line-cta {
-    background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%);
-    border: 1px solid rgba(226,185,111,0.4);
-    border-radius: var(--radius);
-    padding: 32px 28px;
-    margin-bottom: 20px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .line-cta::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-
-  .line-cta::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-
-  .line-cta-title {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 17px; font-weight: 600;
-    color: var(--gold); margin-bottom: 16px; letter-spacing: 2px;
-  }
-
-  .line-cta-result {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 15px; color: var(--gold);
-    margin-bottom: 16px; padding: 12px 16px;
-    border: 1px solid rgba(226,185,111,0.25);
-    border-radius: 8px;
-    background: rgba(226,185,111,0.06);
-    line-height: 1.8;
-  }
-
-  .line-cta-lines {
-    font-size: 13px;
-    color: rgba(226,185,111,0.7);
-    line-height: 2.2; margin-bottom: 20px;
-  }
-
+  .layer-card { background: var(--bg3); border: 1px solid rgba(226,185,111,0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; }
+  .layer-lv { font-size: 11px; color: var(--gold); letter-spacing: 2px; margin-bottom: 6px; }
+  .layer-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
+  .line-cta { background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%); border: 1px solid rgba(226,185,111,0.4); border-radius: var(--radius); padding: 32px 28px; margin-bottom: 20px; text-align: center; position: relative; overflow: hidden; }
+  .line-cta::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .line-cta::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .line-cta-title { font-family: 'Noto Serif TC', serif; font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 16px; letter-spacing: 2px; }
+  .line-cta-result { font-family: 'Noto Serif TC', serif; font-size: 15px; color: var(--gold); margin-bottom: 16px; padding: 12px 16px; border: 1px solid rgba(226,185,111,0.25); border-radius: 8px; background: rgba(226,185,111,0.06); line-height: 1.8; }
+  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 20px; }
   .line-cta .r-line { color: rgba(226,185,111,0.75); }
   .line-cta .r-line::before { color: rgba(226,185,111,0.35); }
-
-  .line-cta-copy {
-    display: block; width: 100%;
-    background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c);
-    border: none; border-radius: 8px;
-    padding: 14px 28px; font-size: 14px;
-    color: #0d0d0d; font-weight: 600;
-    letter-spacing: 2px;
-    font-family: 'Noto Serif TC', serif;
-    cursor: pointer; transition: opacity 0.2s;
-    margin-top: 4px;
-  }
-
+  .line-cta-copy { display: block; width: 100%; background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c); border: none; border-radius: 8px; padding: 14px 28px; font-size: 14px; color: #0d0d0d; font-weight: 600; letter-spacing: 2px; font-family: 'Noto Serif TC', serif; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
   .line-cta-copy:hover { opacity: 0.85; }
   .copy-success { display: none; margin-top: 12px; font-size: 13px; color: var(--gold); letter-spacing: 1px; }
-
-  .error-msg {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 10px; padding: 14px 18px;
-    font-size: 13px; color: #fca5a5;
-    margin-bottom: 16px; display: none;
-  }
-
-  .q-card.unanswered {
-    border-color: rgba(239,68,68,0.5);
-    animation: shake 0.3s ease;
-  }
-
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
-  }
-
-  @media (max-width: 480px) {
-    .q-options { grid-template-columns: repeat(2, 1fr); }
-    .opt-label { font-size: 11px; }
-  }
+  .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #fca5a5; margin-bottom: 16px; display: none; }
+  .q-card.unanswered { border-color: rgba(239,68,68,0.5); animation: shake 0.3s ease; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @media (max-width: 480px) { .q-options { grid-template-columns: repeat(2, 1fr); } .opt-label { font-size: 11px; } }
 </style>
 </head>
 <body>
@@ -411,71 +99,91 @@
   <div class="wrap">
     <div class="header">
       <h1 class="survey-title">免疫快速評估問卷</h1>
-      <p class="survey-sub">請依最近 2 週的狀況作答</p>
+      <p class="survey-sub">請依最近 7 天的狀況作答</p>
     </div>
-
     <div class="progress-wrap">
       <div class="progress-meta">
         <span class="progress-label">作答進度</span>
-        <span class="progress-count" id="prog-count">0 / 9</span>
+        <span class="progress-count" id="prog-count">0 / 15</span>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="prog-fill" style="width:0%"></div>
-      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
     </div>
 
+    
     <div class="q-card" id="card-1">
       <div class="q-num">01</div>
-      <div class="q-text">一忙或壓力大，就容易出現不舒服（喉嚨、疲勞、快感冒）</div>
+      <div class="q-text">一忙或壓力大就容易生病</div>
       <div class="q-options" data-q="1"></div>
     </div>
-
     <div class="q-card" id="card-2">
       <div class="q-num">02</div>
-      <div class="q-text">明明休息了，但身體還是恢復得不太回來</div>
+      <div class="q-text">常覺得身體緊繃或放鬆不下來</div>
       <div class="q-options" data-q="2"></div>
     </div>
-
     <div class="q-card" id="card-3">
       <div class="q-num">03</div>
-      <div class="q-text">睡眠品質會直接影響你的身體狀態</div>
+      <div class="q-text">睡不好時，身體狀況明顯變差</div>
       <div class="q-options" data-q="3"></div>
     </div>
-
     <div class="q-card" id="card-4">
       <div class="q-num">04</div>
-      <div class="q-text">有過敏體質（鼻子、皮膚、氣喘）</div>
+      <div class="q-text">容易嘴破、喉嚨不適</div>
       <div class="q-options" data-q="4"></div>
     </div>
-
     <div class="q-card" id="card-5">
       <div class="q-num">05</div>
-      <div class="q-text">身體常有反覆發炎（皮膚紅癢、腫、發炎）</div>
+      <div class="q-text">覺得自己「一直在撐」</div>
       <div class="q-options" data-q="5"></div>
     </div>
-
     <div class="q-card" id="card-6">
       <div class="q-num">06</div>
-      <div class="q-text">腸胃容易不穩（脹氣、消化差、發炎）</div>
+      <div class="q-text">容易過敏（鼻子、皮膚、氣喘）</div>
       <div class="q-options" data-q="6"></div>
     </div>
-
     <div class="q-card" id="card-7">
       <div class="q-num">07</div>
-      <div class="q-text">手腳容易冰冷</div>
+      <div class="q-text">常有發炎狀態（紅、腫、癢）</div>
       <div class="q-options" data-q="7"></div>
     </div>
-
     <div class="q-card" id="card-8">
       <div class="q-num">08</div>
-      <div class="q-text">容易反覆感冒或感染（頻率比一般人高）</div>
+      <div class="q-text">腸胃容易不舒服或脹氣</div>
       <div class="q-options" data-q="8"></div>
     </div>
-
     <div class="q-card" id="card-9">
       <div class="q-num">09</div>
-      <div class="q-text">傷口癒合較慢或身體恢復時間長</div>
+      <div class="q-text">常反覆感冒或久不痊癒</div>
       <div class="q-options" data-q="9"></div>
+    </div>
+    <div class="q-card" id="card-10">
+      <div class="q-num">10</div>
+      <div class="q-text">身體容易疲勞但恢復慢</div>
+      <div class="q-options" data-q="10"></div>
+    </div>
+    <div class="q-card" id="card-11">
+      <div class="q-num">11</div>
+      <div class="q-text">手腳容易冰冷</div>
+      <div class="q-options" data-q="11"></div>
+    </div>
+    <div class="q-card" id="card-12">
+      <div class="q-num">12</div>
+      <div class="q-text">傷口癒合較慢</div>
+      <div class="q-options" data-q="12"></div>
+    </div>
+    <div class="q-card" id="card-13">
+      <div class="q-num">13</div>
+      <div class="q-text">體溫偏低或怕冷</div>
+      <div class="q-options" data-q="13"></div>
+    </div>
+    <div class="q-card" id="card-14">
+      <div class="q-num">14</div>
+      <div class="q-text">常覺得氣血循環不好</div>
+      <div class="q-options" data-q="14"></div>
+    </div>
+    <div class="q-card" id="card-15">
+      <div class="q-num">15</div>
+      <div class="q-text">容易疲倦、沒精神</div>
+      <div class="q-options" data-q="15"></div>
     </div>
 
     <div class="email-section">
@@ -483,12 +191,8 @@
       <input class="email-input" id="email-input" type="email" placeholder="your@email.com">
       <p class="email-note">僅用於寄送分析報告，不會用於其他用途</p>
     </div>
-
     <div class="error-msg" id="error-msg">請完成所有題目後再送出 ✦</div>
-
-    <button class="submit-btn" onclick="submitSurvey()">
-      查看我的免疫分析結果
-    </button>
+    <button class="submit-btn" onclick="submitSurvey()">查看我的免疫分析結果</button>
   </div>
 </div>
 
@@ -510,42 +214,17 @@
     </div>
 
     <div class="scores-wrap">
-      <div class="score-row">
-        <span class="score-name">壓力 · 自律神經</span>
-        <div class="score-track"><div class="score-fill stress" id="bar-stress" style="width:0%"></div></div>
-        <span class="score-val" id="val-stress">0/9</span>
-      </div>
-      <div class="score-row">
-        <span class="score-name">發炎 · 免疫失衡</span>
-        <div class="score-track"><div class="score-fill inflammation" id="bar-inflammation" style="width:0%"></div></div>
-        <span class="score-val" id="val-inflammation">0/9</span>
-      </div>
-      <div class="score-row">
-        <span class="score-name">結構 · 循環</span>
-        <div class="score-track"><div class="score-fill structure" id="bar-structure" style="width:0%"></div></div>
-        <span class="score-val" id="val-structure">0/9</span>
-      </div>
+      <div class="score-row"><span class="score-name">壓力型</span><div class="score-track"><div class="score-fill stress" id="bar-stress" style="width:0%"></div></div><span class="score-val" id="val-stress">0/15</span></div>
+      <div class="score-row"><span class="score-name">發炎型</span><div class="score-track"><div class="score-fill inflammation" id="bar-inflammation" style="width:0%"></div></div><span class="score-val" id="val-inflammation">0/15</span></div>
+      <div class="score-row"><span class="score-name">結構型</span><div class="score-track"><div class="score-fill structure" id="bar-structure" style="width:0%"></div></div><span class="score-val" id="val-structure">0/15</span></div>
     </div>
 
-    <div class="r-block">
-      <div class="r-block-title">整體狀態</div>
-      <div id="r-overall"></div>
-    </div>
-
-    <div class="r-block">
-      <div class="r-block-title">你可能會有的情況</div>
-      <div id="r-triggers"></div>
-    </div>
-
-    <div class="r-block r-core">
-      <div class="r-block-title">關鍵核心</div>
-      <div id="r-core"></div>
-    </div>
-
-    <div class="r-block r-brand">
-      <div class="r-block-title">給你的話</div>
-      <div id="r-brand"></div>
-    </div>
+    <div class="r-block"><div class="r-block-title">你的免疫狀態</div><div id="r-opening"></div></div>
+    <div class="r-block"><div class="r-block-title">你目前的狀況</div><div id="r-type-desc"></div></div>
+    <div class="r-block"><div class="r-block-title">你可能會有的情況</div><div id="r-situation"></div></div>
+    <div class="r-block"><div class="r-block-title">影響你免疫的三個層面</div><div id="r-layers"></div></div>
+    <div class="r-block r-core"><div class="r-block-title">關鍵核心</div><div id="r-core"></div></div>
+    <div class="r-block r-brand"><div class="r-block-title">調整方向</div><div id="r-adjust"></div></div>
 
     <div class="line-cta">
       <div class="line-cta-title">想了解更多？</div>
@@ -558,13 +237,13 @@
 </div>
 
 <script>
+const TOTAL = 15;
 const OPTIONS = [
   { score: 0, label: '幾乎沒有' },
   { score: 1, label: '偶爾' },
   { score: 2, label: '常常' },
   { score: 3, label: '幾乎每天' },
 ];
-
 const answers = {};
 
 document.querySelectorAll('.q-options').forEach(wrap => {
@@ -580,37 +259,30 @@ document.querySelectorAll('.q-options').forEach(wrap => {
 
 function selectAnswer(q, score, wrap) {
   answers[q] = score;
-  wrap.querySelectorAll('.opt-btn').forEach((b, i) => {
-    b.classList.toggle('selected', OPTIONS[i].score === score);
-  });
+  wrap.querySelectorAll('.opt-btn').forEach((b, i) => b.classList.toggle('selected', OPTIONS[i].score === score));
   document.getElementById(`card-${q}`)?.classList.remove('unanswered');
   updateProgress();
 }
 
 function updateProgress() {
   const count = Object.keys(answers).length;
-  document.getElementById('prog-count').textContent = `${count} / 9`;
-  document.getElementById('prog-fill').style.width = `${count / 9 * 100}%`;
+  document.getElementById('prog-count').textContent = `${count} / ${TOTAL}`;
+  document.getElementById('prog-fill').style.width = `${count / TOTAL * 100}%`;
 }
 
 async function submitSurvey() {
   const missing = [];
-  for (let i = 1; i <= 9; i++) {
-    if (answers[i] === undefined) missing.push(i);
-  }
+  for (let i = 1; i <= TOTAL; i++) { if (answers[i] === undefined) missing.push(i); }
   if (missing.length > 0) {
     missing.forEach(i => document.getElementById(`card-${i}`)?.classList.add('unanswered'));
     document.getElementById('error-msg').style.display = 'block';
     document.getElementById(`card-${missing[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-
   document.getElementById('error-msg').style.display = 'none';
   document.getElementById('survey').style.display = 'none';
   document.getElementById('loading').style.display = 'block';
-
   const email = document.getElementById('email-input').value.trim();
-
   try {
     const res = await fetch('/api/survey/immune', {
       method: 'POST',
@@ -618,51 +290,38 @@ async function submitSurvey() {
       body: JSON.stringify({ answers, email }),
     });
     if (!res.ok) throw new Error();
-    const data = await res.json();
-    showResult(data);
-  } catch (e) {
-    showResult(mockResult());
-  }
+    showResult(await res.json());
+  } catch (e) { showResult(mockResult()); }
 }
 
 function showResult(data) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
-
   document.getElementById('r-primary').textContent   = data.headline.primary;
   document.getElementById('r-secondary').textContent = data.headline.secondary;
-
-  window._scores   = data.scores;
-  window._headline = data.headline;
-
+  const s = data.scores;
   const ctaResult = document.getElementById('r-cta-result');
   if (ctaResult) {
-    const s = data.scores;
     ctaResult.innerHTML =
       '主類型：' + data.headline.primary + '<br>' +
       '次類型：' + data.headline.secondary + '<br><br>' +
-      '壓力／自律神經：' + (s.stress?.score       ?? s.stress       ?? '-') + ' 分<br>' +
-      '發炎／免疫失衡：' + (s.inflammation?.score ?? s.inflammation ?? '-') + ' 分<br>' +
-      '結構／循環：'     + (s.structure?.score    ?? s.structure    ?? '-') + ' 分';
+      '壓力型：'  + (s.stress       ?? '-') + ' 分<br>' +
+      '發炎型：'  + (s.inflammation ?? '-') + ' 分<br>' +
+      '結構型：'  + (s.structure    ?? '-') + ' 分';
   }
-
   setTimeout(() => {
-    setBar('stress',       s(data,'stress'),       9);
-    setBar('inflammation', s(data,'inflammation'), 9);
-    setBar('structure',    s(data,'structure'),    9);
+    setBar('stress',       s.stress,       15);
+    setBar('inflammation', s.inflammation, 15);
+    setBar('structure',    s.structure,    15);
   }, 300);
-
-  renderLines('r-overall',  data.overallStatus);
-  renderLines('r-triggers', data.lifeSituation.triggerMoments);
-  renderLines('r-core',     data.coreIssue);
-  renderLines('r-brand',    data.brandClosing);
-  renderLines('r-line-cta', data.lineCallToAction);
-}
-
-function s(data, key) {
-  const v = data.scores[key];
-  return typeof v === 'object' ? v.score : v;
+  renderLines('r-opening',   data.opening);
+  renderLines('r-type-desc', data.typeDesc);
+  renderLines('r-situation', data.situation);
+  renderLayers('r-layers',   data.layers);
+  renderLines('r-core',      data.coreIssue);
+  renderLines('r-adjust',    data.adjustDirection);
+  renderLines('r-line-cta',  data.lineCallToAction);
 }
 
 function setBar(key, score, max) {
@@ -675,52 +334,65 @@ function renderLines(id, lines) {
   if (el) el.innerHTML = (lines || []).map(l => `<div class="r-line">${l}</div>`).join('');
 }
 
+function renderLayers(id, layers) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = (layers || []).map(l =>
+    `<div class="layer-card"><div class="layer-lv">${l.lv}</div><div class="layer-desc">${l.desc}</div></div>`
+  ).join('');
+}
+
 function copyResult() {
   const primary   = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
   const text = '我的免疫屬於 主類型：' + primary + ' 次類型：' + secondary;
-
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
     btn.textContent = '✓ 已複製！';
     if (suc) suc.style.display = 'block';
-    setTimeout(() => {
-      btn.textContent = '複製我的分析結果';
-      if (suc) suc.style.display = 'none';
-    }, 3000);
+    setTimeout(() => { btn.textContent = '複製我的分析結果'; if (suc) suc.style.display = 'none'; }, 3000);
   });
 }
 
 function mockResult() {
   return {
-    headline: { primary: '壓力型（自律神經型）', secondary: '發炎型（免疫失衡型）' },
-    scores: { stress: 7, inflammation: 5, structure: 3 },
-    overallStatus: [
-      '你的免疫問題，不是單純「容易生病」',
-      '比較像是：身體在不同情況下，穩定與恢復能力不一致',
+    headline: { primary: '壓力型（神經影響）', secondary: '發炎型（內在失衡）' },
+    scores: { stress: 11, inflammation: 8, structure: 5 },
+    opening: [
+      '我看了你的測試結果',
+      '你的免疫狀態偏向：「壓力型」',
+      '並伴隨部分「發炎型」的影響',
     ],
-    lifeSituation: {
-      triggerMoments: [
-        '一忙或壓力大就容易不舒服',
-        '熬夜或疲勞後身體狀況變差',
-        '情緒緊繃時容易出現小病症',
-      ],
-    },
+    typeDesc: [
+      '你的狀態比較像：「神經一直在影響免疫」',
+      '✔ 一忙就容易生病',
+      '✔ 身體緊繃放鬆不下來',
+      '✔ 覺得自己一直在撐',
+      '這不是免疫力差，是「壓力在消耗你的免疫」',
+    ],
+    situation: [
+      '☀️ 白天：容易疲勞、身體緊繃、狀況不穩',
+      '🌙 晚上：睡不好讓免疫更差',
+      '📉 長期：反覆生病、恢復慢、能量下降',
+    ],
+    layers: [
+      { lv: 'Lv3｜神經層（主）', desc: '壓力與自律神經直接影響免疫穩定，神經過載讓身體無法好好修復。' },
+      { lv: 'Lv2｜發炎層（次）', desc: '慢性發炎消耗免疫資源，讓身體容易過敏、反覆不適。' },
+      { lv: 'Lv1｜細胞修復層（基底）', desc: '免疫的根本在細胞修復力，無論哪種類型都需要優先補足。' },
+    ],
     coreIssue: [
-      '你的問題不是「免疫力不夠」',
+      '你現在的問題不是免疫力不夠',
       '而是：身體缺乏穩定與修復的能力',
-      '免疫不是單純變強，而是要維持「平衡與調節」',
     ],
-    brandClosing: [
-      '免疫不是讓你不生病',
-      '而是讓身體能夠「穩定運作與恢復」',
-      '當身體回到平衡狀態，免疫自然會變穩定',
+    adjustDirection: [
+      '① 從「神經穩定」開始 → 讓免疫不再被壓力消耗',
+      '② 從「抗發炎」開始 → 讓身體回到平衡',
+      '你比較有感的是哪一個？',
     ],
     lineCallToAction: [
-      '如果你看到這裡，其實你已經知道',
-      '免疫問題通常不是單一原因',
-      '我可以幫你看你的狀況，幫你整理一個「比較適合你的調整順序」',
+      '你這次的狀態，主要是「壓力型＋發炎型」',
+      '通常會有兩個調整方向',
       '直接把結果複製傳LINE給我就好',
     ],
   };
