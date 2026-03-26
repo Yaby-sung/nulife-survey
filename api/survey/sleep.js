@@ -75,6 +75,8 @@ module.exports = async function handler(req, res) {
     scores,
     opening: [
       '我看了你的測試結果',
+      '你的睡眠狀態偏向：「' + TYPE_LABEL[primaryKey] + '」',
+      '並伴隨部分「' + TYPE_LABEL[secondaryKey] + '」的影響',
       '其實你的狀態，不是單純「睡不好」',
       '比較像是：身體累，但沒有真正休息到',
     ],
