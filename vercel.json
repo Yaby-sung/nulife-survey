@@ -5,6 +5,7 @@
     { "src": "/sleep-survey", "dest": "/sleep-survey.html" },
     { "src": "/immune-survey", "dest": "/immune-survey.html" },
     { "src": "/body-survey", "dest": "/body-survey.html" },
-    { "src": "/skin-survey", "dest": "/skin-survey.html" }
+    { "src": "/skin-survey", "dest": "/skin-survey.html" },
+    { "src": "/emotion-survey", "dest": "/emotion-survey.html" }
   ]
 }
