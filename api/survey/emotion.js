@@ -10,9 +10,9 @@ const GROUPS = {
 };
 
 const TYPE_LABEL = {
-  stress:       '壓力型失衡（神經過載）',
-  inflammation: '發炎型情緒（身體壓力）',
-  structure:    '結構耗損型（慢性壓力）',
+  stress:       '壓力型失衡（神經）',
+  inflammation: '發炎型情緒（體壓）',
+  structure:    '結構耗損型（慢壓）',
 };
 
 const TYPE_DESC = {
