@@ -210,7 +210,7 @@
       <div class="score-row"><span class="score-name">發炎型情緒</span><div class="score-track"><div class="score-fill inflammation" id="bar-inflammation" style="width:0%"></div></div><span class="score-val" id="val-inflammation">0/15</span></div>
       <div class="score-row"><span class="score-name">結構耗損型</span><div class="score-track"><div class="score-fill structure" id="bar-structure" style="width:0%"></div></div><span class="score-val" id="val-structure">0/15</span></div>
     </div>
-    <div class="r-block"><div class="r-block-title">你的情緒狀態</div><div id="r-opening"></div></div>
+    <div class="r-block"><div class="r-block-title">你的情緒壓力狀態</div><div id="r-opening"></div></div>
     <div class="r-block"><div class="r-block-title">你目前的狀況</div><div id="r-type-desc"></div></div>
     <div class="r-block"><div class="r-block-title">你可能會有的情況</div><div id="r-situation"></div></div>
     <div class="r-block"><div class="r-block-title">影響你情緒的三個層面</div><div id="r-layers"></div></div>
@@ -335,7 +335,7 @@ function renderLayers(id, layers) {
 function copyResult() {
   const primary   = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
-  const text = '我的情緒屬於 主類型：' + primary + ' 次類型：' + secondary;
+  const text = '我的情緒壓力屬於 主類型：' + primary + ' 次類型：' + secondary;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
