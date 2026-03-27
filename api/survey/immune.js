@@ -10,9 +10,9 @@ const GROUPS = {
 };
 
 const TYPE_LABEL = {
-  stress:       '壓力型（神經影響）',
-  inflammation: '發炎型（內在失衡）',
-  structure:    '結構型（循環與基礎）',
+  stress:       '🟡 壓力型免疫（神經）',
+  inflammation: '🔴 發炎型免疫（內在）',
+  structure:    '🟣 結構型免疫（循環）',
 };
 
 const TYPE_DESC = {
