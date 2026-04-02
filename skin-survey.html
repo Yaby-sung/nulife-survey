@@ -36,12 +36,6 @@
   .opt-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(126,184,247,0.06); }
   .opt-btn.selected { background: rgba(126,184,247,0.12); border-color: var(--accent); color: var(--accent); }
   .opt-label { font-size: 13px; font-family: 'Noto Sans TC', sans-serif; font-weight: 400; letter-spacing: 1px; text-align: center; line-height: 1.5; }
-  .email-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 24px; }
-  .email-label { font-size: 13px; color: var(--text2); margin-bottom: 12px; display: block; }
-  .email-note { font-size: 11px; color: var(--text3); margin-top: 8px; }
-  .email-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
-  .email-input:focus { border-color: var(--accent); }
-  .email-input::placeholder { color: var(--text3); }
   .submit-btn { width: 100%; background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); border: none; border-radius: var(--radius); padding: 18px; color: #0a0e1a; font-size: 15px; font-weight: 500; font-family: inherit; cursor: pointer; letter-spacing: 1px; transition: opacity 0.2s, transform 0.1s; }
   .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
   #loading { display: none; text-align: center; padding: 80px 20px; }
@@ -348,11 +342,6 @@
       <div class="q-text">家族有提早老化狀況</div>
       <div class="q-options" data-q="30"></div>
     </div>
-    <div class="email-section">
-      <label class="email-label" for="email-input">輸入 Email，將結果寄給你（選填）</label>
-      <input class="email-input" id="email-input" type="email" placeholder="your@email.com">
-      <p class="email-note">僅用於寄送分析報告，不會用於其他用途</p>
-    </div>
     <div class="error-msg" id="error-msg">請完成所有題目後再送出 ✦</div>
     <button class="submit-btn" onclick="submitSurvey()">查看我的分析結果</button>
   </div>
@@ -453,7 +442,7 @@ async function submitSurvey() {
   document.getElementById('error-msg').style.display = 'none';
   document.getElementById('survey').style.display = 'none';
   document.getElementById('loading').style.display = 'block';
-  const email = document.getElementById('email-input').value.trim();
+  const email = '';
   try {
     const res = await fetch('/api/survey/skin', {
       method: 'POST',
