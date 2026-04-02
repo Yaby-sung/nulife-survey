@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>體態管理檢測｜抗老研究室</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2236; --card: #151d2e;
+    --bg: #0a0e1a; --bg3: #1a2236; --card: #151d2e;
     --border: #1e2d45; --accent: #7eb8f7; --accent2: #a78bfa;
     --gold: #e2b96f; --text: #e8edf5; --text2: #8a9bbf; --text3: #4a5a7a; --radius: 16px;
   }
@@ -48,24 +49,64 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; color: var(--text2); letter-spacing: 1px; }
   #result { display: none; }
-  .result-header { text-align: center; padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 16px; }
-  .result-title { font-family: 'Noto Serif TC', serif; font-size: clamp(24px, 6vw, 36px); font-weight: 600; line-height: 1.3; margin-bottom: 8px; background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .result-secondary { font-size: 14px; color: var(--text2); margin-top: 12px; }
-  .result-secondary strong { color: var(--accent2); font-weight: 500; }
-  .scores-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
-  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .score-row:last-child { margin-bottom: 0; }
-  .score-name { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; }
-  .score-track { flex: 1; height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
-  .score-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.4,0,.2,1); }
-  .score-fill.diet     { background: linear-gradient(90deg, #f59e0b, #f97316); }
-  .score-fill.exercise { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-  .score-fill.stress   { background: linear-gradient(90deg, #a78bfa, #ec4899); }
-  .score-fill.insulin  { background: linear-gradient(90deg, #ef4444, #f97316); }
-  .score-fill.survival { background: linear-gradient(90deg, #6b7280, #9ca3af); }
-  .score-fill.gene     { background: linear-gradient(90deg, #4ade80, #06b6d4); }
-  .score-val { font-size: 12px; color: var(--text3); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* ── 主次類型 Hero ── */
+  .type-hero {
+    text-align: center;
+    padding: 40px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 20px; }
+  .primary-type {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 600;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .primary-label { font-size: 11px; letter-spacing: 2px; color: var(--text3); margin-bottom: 20px; }
+  .secondary-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    
+  }
+  .secondary-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; }
+  .secondary-type { font-size: 15px; color: var(--accent2); font-family: 'Noto Serif TC', serif; font-weight: 600; }
+
+  /* ── 雷達圖（在標題下方）── */
+  .radar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin: 20px 0 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .radar-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(126,184,247,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .radar-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text3);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .radar-canvas { max-width: 300px; margin: 0 auto; display: block; }
+
+  /* ── 內容區塊 ── */
   .r-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px; }
   .r-block-title { font-size: 11px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .r-line { font-size: 14px; color: var(--text2); line-height: 1.8; padding: 4px 0; display: flex; align-items: flex-start; gap: 10px; }
@@ -78,17 +119,63 @@
   .layer-card { background: var(--bg3); border: 1px solid rgba(226,185,111,0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; }
   .layer-lv { font-size: 11px; color: var(--gold); letter-spacing: 2px; margin-bottom: 6px; }
   .layer-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
-  .line-cta { background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%); border: 1px solid rgba(226,185,111,0.4); border-radius: var(--radius); padding: 32px 28px; margin-bottom: 20px; text-align: center; position: relative; overflow: hidden; }
+
+  /* ── LINE CTA ── */
+  .line-cta {
+    background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%);
+    border: 1px solid rgba(226,185,111,0.4);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
   .line-cta::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
-  .line-cta::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .line-cta::after  { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
   .line-cta-title { font-family: 'Noto Serif TC', serif; font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 16px; letter-spacing: 2px; }
-  .line-cta-result { font-family: 'Noto Serif TC', serif; font-size: 15px; color: var(--gold); margin-bottom: 16px; padding: 12px 16px; border: 1px solid rgba(226,185,111,0.25); border-radius: 8px; background: rgba(226,185,111,0.06); line-height: 1.8; }
-  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 20px; }
+
+  /* 主次類型摘要（不顯示分數）*/
+  .line-cta-result {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    color: var(--gold);
+    margin-bottom: 20px;
+    padding: 16px;
+    border: 1px solid rgba(226,185,111,0.25);
+    border-radius: 10px;
+    background: rgba(226,185,111,0.06);
+    line-height: 2;
+  }
+  .cta-primary-label { font-size: 12px; color: rgba(226,185,111,0.55); letter-spacing: 1px; display: block; margin-bottom: 4px; }
+  .cta-primary-text { font-size: clamp(28px, 7vw, 40px); font-weight: 600; color: var(--gold); display: block; margin-bottom: 4px; line-height: 1.2; }
+  .cta-secondary-label { font-size: 12px; color: rgba(226,185,111,0.55); letter-spacing: 1px; display: block; margin-bottom: 4px; margin-top: 16px; }
+  .cta-secondary-text { font-size: clamp(22px, 5vw, 32px); font-weight: 600; color: rgba(226,185,111,0.8); display: block; line-height: 1.2; }
+
+  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 24px; }
   .line-cta .r-line { color: rgba(226,185,111,0.75); }
   .line-cta .r-line::before { color: rgba(226,185,111,0.35); }
-  .line-cta-copy { display: block; width: 100%; background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c); border: none; border-radius: 8px; padding: 14px 28px; font-size: 14px; color: #0d0d0d; font-weight: 600; letter-spacing: 2px; font-family: 'Noto Serif TC', serif; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
-  .line-cta-copy:hover { opacity: 0.85; }
-  .copy-success { display: none; margin-top: 12px; font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+  .cta-instruction { font-size: 13px; color: rgba(226,185,111,0.55); margin-bottom: 14px; letter-spacing: 1px; }
+
+  /* 大按鈕 */
+  .line-cta-copy {
+    display: block; width: 100%;
+    background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c);
+    border: none; border-radius: 14px;
+    padding: 22px 28px;
+    font-size: 20px;
+    color: #0d0d0d; font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Noto Serif TC', serif;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    line-height: 1.5;
+    box-shadow: 0 4px 24px rgba(226,185,111,0.25);
+  }
+  .line-cta-copy:hover { opacity: 0.92; transform: translateY(-3px); box-shadow: 0 8px 32px rgba(226,185,111,0.35); }
+  .line-cta-copy:active { transform: translateY(0); }
+  .copy-success { display: none; margin-top: 16px; font-size: 15px; color: var(--gold); letter-spacing: 1px; font-weight: 500; }
+
   .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #fca5a5; margin-bottom: 16px; display: none; }
   .q-card.unanswered { border-color: rgba(239,68,68,0.5); animation: shake 0.3s ease; }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
@@ -267,10 +354,9 @@
       <p class="email-note">僅用於寄送分析報告，不會用於其他用途</p>
     </div>
     <div class="error-msg" id="error-msg">請完成所有題目後再送出 ✦</div>
-    <button class="submit-btn" onclick="submitSurvey()">查看我的體態分析結果</button>
+    <button class="submit-btn" onclick="submitSurvey()">查看我的分析結果</button>
   </div>
 </div>
-
 <div id="loading">
   <div class="wrap">
     <div style="padding-top: 80px; text-align: center;">
@@ -279,38 +365,46 @@
     </div>
   </div>
 </div>
-
 <div id="result">
   <div class="wrap">
-    <div class="result-header">
+    <div class="type-hero">
       <div class="result-eyebrow">抗老研究室｜體態分析報告</div>
-      <div class="result-title" id="r-primary">—</div>
-      <div class="result-secondary">並伴隨部分 <strong id="r-secondary">—</strong> 的影響</div>
+      <div class="primary-type" id="r-primary">—</div>
+      <div class="secondary-wrap">
+        <span class="secondary-label">並伴隨部分 </span><span class="secondary-type" id="r-secondary">—</span><span class="secondary-label"> 的影響</span>
+      </div>
     </div>
-    <div class="scores-wrap">
-      <div class="score-row"><span class="score-name">飲食型</span><div class="score-track"><div class="score-fill diet" id="bar-diet" style="width:0%"></div></div><span class="score-val" id="val-diet">0/15</span></div>
-      <div class="score-row"><span class="score-name">運動型</span><div class="score-track"><div class="score-fill exercise" id="bar-exercise" style="width:0%"></div></div><span class="score-val" id="val-exercise">0/15</span></div>
-      <div class="score-row"><span class="score-name">壓力型</span><div class="score-track"><div class="score-fill stress" id="bar-stress" style="width:0%"></div></div><span class="score-val" id="val-stress">0/15</span></div>
-      <div class="score-row"><span class="score-name">胰島素型</span><div class="score-track"><div class="score-fill insulin" id="bar-insulin" style="width:0%"></div></div><span class="score-val" id="val-insulin">0/15</span></div>
-      <div class="score-row"><span class="score-name">保命機制型</span><div class="score-track"><div class="score-fill survival" id="bar-survival" style="width:0%"></div></div><span class="score-val" id="val-survival">0/15</span></div>
-      <div class="score-row"><span class="score-name">基因表現型</span><div class="score-track"><div class="score-fill gene" id="bar-gene" style="width:0%"></div></div><span class="score-val" id="val-gene">0/15</span></div>
+    <div class="radar-wrap">
+      <div class="radar-title">體態分析報告</div>
+      <canvas class="radar-canvas" id="radarChart"></canvas>
     </div>
-    <div class="r-block"><div class="r-block-title">你的體態狀態</div><div id="r-opening"></div></div>
+    <div class="r-block"><div class="r-block-title">你的狀態</div><div id="r-opening"></div></div>
     <div class="r-block"><div class="r-block-title">你目前的狀況</div><div id="r-type-desc"></div></div>
     <div class="r-block"><div class="r-block-title">你可能會有的情況</div><div id="r-situation"></div></div>
-    <div class="r-block"><div class="r-block-title">影響你體態的三個層面</div><div id="r-layers"></div></div>
+    <div class="r-block"><div class="r-block-title">影響你的三個層面</div><div id="r-layers"></div></div>
     <div class="r-block r-core"><div class="r-block-title">關鍵核心</div><div id="r-core"></div></div>
     <div class="r-block r-brand"><div class="r-block-title">調整方向</div><div id="r-adjust"></div></div>
     <div class="line-cta">
       <div class="line-cta-title">想了解更多？</div>
-      <div class="line-cta-result" id="r-cta-result"></div>
+      <div class="line-cta-result">
+        <div class="cta-primary-row">
+          <span class="cta-primary-label">主類型｜</span>
+          <span class="cta-primary-text" id="cta-primary">—</span>
+        </div>
+        <div class="cta-secondary-row">
+          <span class="cta-secondary-label">次類型｜</span>
+          <span class="cta-secondary-text" id="cta-secondary">—</span>
+        </div>
+      </div>
       <div class="line-cta-lines" id="r-line-cta"></div>
-      <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">複製我的分析結果</button>
-      <div class="copy-success" id="copy-success">✓ 已複製！貼到 LINE 傳給我們</div>
+      <div class="cta-instruction">👇 點擊下方按鈕，複製結果後傳給我們</div>
+      <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">
+        📋 複製分析結果<br>回傳到 LINE 官方
+      </button>
+      <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
     </div>
   </div>
 </div>
-
 <script>
 const TOTAL = 30;
 const OPTIONS = [
@@ -320,6 +414,8 @@ const OPTIONS = [
   { score: 3, label: '幾乎每天' },
 ];
 const answers = {};
+const RADAR_LABELS = ['飲食型', '運動型', '壓力型', '胰島素型', '保命型', '基因型'];
+const RADAR_KEYS = ['diet', 'exercise', 'stress', 'insulin', 'survival', 'gene'];
 
 document.querySelectorAll('.q-options').forEach(wrap => {
   const q = +wrap.dataset.q;
@@ -369,52 +465,77 @@ async function submitSurvey() {
   } catch (e) { showResult(mockResult()); }
 }
 
+let radarChart = null;
+
+function animateRadar(chart, targetData) {
+  const steps = 40; let step = 0;
+  const timer = setInterval(() => {
+    step++;
+    const ease = 1 - Math.pow(1 - step/steps, 3);
+    chart.data.datasets[0].data = targetData.map(v => v * ease);
+    chart.update('none');
+    if (step >= steps) clearInterval(timer);
+  }, 20);
+}
+
 function showResult(data) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  document.getElementById('r-primary').textContent   = data.headline.primary;
-  document.getElementById('r-secondary').textContent = data.headline.secondary;
+  const primary = data.headline.primary;
+  const secondary = data.headline.secondary;
+  document.getElementById('r-primary').textContent = primary;
+  document.getElementById('r-secondary').textContent = secondary;
+  document.getElementById('cta-primary').textContent = primary;
+  document.getElementById('cta-secondary').textContent = secondary;
   const s = data.scores;
-  const ctaResult = document.getElementById('r-cta-result');
-  if (ctaResult) {
-    ctaResult.innerHTML =
-      '主類型：' + data.headline.primary + '<br>' +
-      '次類型：' + data.headline.secondary + '<br><br>' +
-      '飲食型：'   + (s.diet     ?? '-') + ' 分<br>' +
-      '運動型：'   + (s.exercise ?? '-') + ' 分<br>' +
-      '壓力型：'   + (s.stress   ?? '-') + ' 分<br>' +
-      '胰島素型：' + (s.insulin  ?? '-') + ' 分<br>' +
-      '保命機制：' + (s.survival ?? '-') + ' 分<br>' +
-      '基因表現：' + (s.gene     ?? '-') + ' 分';
-  }
+  const vals = RADAR_KEYS.map(k => typeof s[k] === 'object' ? s[k].score : (s[k] ?? 0));
   setTimeout(() => {
-    setBar('diet',     s.diet,     15);
-    setBar('exercise', s.exercise, 15);
-    setBar('stress',   s.stress,   15);
-    setBar('insulin',  s.insulin,  15);
-    setBar('survival', s.survival, 15);
-    setBar('gene',     s.gene,     15);
-  }, 300);
-  renderLines('r-opening',   data.opening);
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: RADAR_LABELS,
+        datasets: [{
+          data: RADAR_LABELS.map(() => 0),
+          backgroundColor: 'rgba(226,185,111,0.12)',
+          borderColor: 'rgba(226,185,111,0.9)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(226,185,111,1)',
+          pointBorderColor: 'transparent',
+          pointRadius: 5, pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true, animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            min: 0, max: 15,
+            ticks: { display: false },
+            grid: { color: 'rgba(138,155,191,0.3)' },
+            angleLines: { color: 'rgba(138,155,191,0.3)' },
+            pointLabels: { color: '#e2b96f', font: { size: 13, family: 'Noto Sans TC' } },
+          }
+        }
+      }
+    });
+    animateRadar(radarChart, vals);
+  }, 400);
+  renderLines('r-opening', data.opening);
   renderLines('r-type-desc', data.typeDesc);
   renderLines('r-situation', data.situation);
-  renderLayers('r-layers',   data.layers);
-  renderLines('r-core',      data.coreIssue);
-  renderLines('r-adjust',    data.adjustDirection);
-  renderLines('r-line-cta',  data.lineCallToAction);
-}
-
-function setBar(key, score, max) {
-  document.getElementById(`bar-${key}`).style.width = `${Math.round(score / max * 100)}%`;
-  document.getElementById(`val-${key}`).textContent = `${score}/${max}`;
+  renderLayers('r-layers', data.layers);
+  renderLines('r-core', data.coreIssue);
+  renderLines('r-adjust', data.adjustDirection);
+  renderLines('r-line-cta', data.lineCallToAction);
 }
 
 function renderLines(id, lines) {
   const el = document.getElementById(id);
   if (el) el.innerHTML = (lines || []).map(l => `<div class="r-line">${l}</div>`).join('');
 }
-
 function renderLayers(id, layers) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -422,67 +543,33 @@ function renderLayers(id, layers) {
     `<div class="layer-card"><div class="layer-lv">${l.lv}</div><div class="layer-desc">${l.desc}</div></div>`
   ).join('');
 }
-
 function copyResult() {
-  const primary   = document.getElementById('r-primary').textContent;
+  const primary = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
   const text = '我的體態屬於 主類型：' + primary + ' 次類型：' + secondary;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
-    btn.textContent = '✓ 已複製！';
+    btn.innerHTML = '✓ 已複製！';
     if (suc) suc.style.display = 'block';
-    setTimeout(() => { btn.textContent = '複製我的分析結果'; if (suc) suc.style.display = 'none'; }, 3000);
+    setTimeout(() => { btn.innerHTML = '📋 複製分析結果<br>回傳到 LINE 官方'; if (suc) suc.style.display = 'none'; }, 3000);
   });
 }
-
-function mockResult() {
-  return {
+function mockResult() { return {
     headline: { primary: '壓力型（荷爾蒙）', secondary: '胰島素型（血糖波動）' },
     scores: { diet: 8, exercise: 6, stress: 11, insulin: 9, survival: 4, gene: 5 },
-    opening: [
-      '我看了你的測試結果',
-      '你的體態狀態偏向：「壓力型（荷爾蒙）」',
-      '並伴隨部分「胰島素型（血糖波動）」的影響',
-      '其實你的狀態，不是單純「瘦不下來」',
-      '身體正在用現在的模式運作',
-      '體重是結果，真正的關鍵是身體的代謝系統',
-    ],
-    typeDesc: [
-      '你的狀態比較像：「壓力影響代謝」',
-      '✔ 壓力大容易暴食',
-      '✔ 睡不好',
-      '✔ 肚子容易囤脂',
-      '不是自制力差，是荷爾蒙在影響',
-    ],
-    situation: [
-      '☀️ 白天：容易累、想吃東西、精神不穩',
-      '🌙 晚上：想吃高熱量、控制不了',
-      '📉 長期：體重卡住，或反覆上下',
-      '其實都是身體在失衡',
-    ],
+    opening: ['我看了你的測試結果','你的體態狀態偏向：「壓力型（荷爾蒙）」','並伴隨部分「胰島素型（血糖波動）」的影響','其實你的狀態，不是單純「瘦不下來」','身體正在用現在的模式運作','體重是結果，真正的關鍵是身體的代謝系統'],
+    typeDesc: ['你的狀態比較像：「壓力影響代謝」','✔ 壓力大容易暴食','✔ 睡不好','✔ 肚子容易囤脂','不是自制力差，是荷爾蒙在影響'],
+    situation: ['☀️ 白天：容易累、想吃東西、精神不穩','🌙 晚上：想吃高熱量、控制不了','📉 長期：體重卡住，或反覆上下','其實都是身體在失衡'],
     layers: [
       { lv: 'Lv3｜壓力與荷爾蒙層（主）', desc: '壓力荷爾蒙直接影響脂肪囤積與代謝節奏，是你目前最需要穩定的層面。' },
       { lv: 'Lv2｜血糖與發炎層（次）', desc: '血糖波動讓身體持續囤積脂肪，需要從飲食節奏調整起。' },
       { lv: 'Lv1｜細胞修復層（基底）', desc: '代謝能不能恢復，根本在細胞修復力，需要優先補足。' },
     ],
-    coreIssue: [
-      '你現在的問題不是吃太多、動太少',
-      '而是：身體沒有回到「正常燃燒模式」',
-      '不是你瘦不下來，是身體還沒準備好變瘦',
-    ],
-    adjustDirection: [
-      '① 從「基礎代謝修復」開始 → 讓身體能運作',
-      '② 從「血糖／壓力調整」開始 → 讓脂肪不再囤積',
-      '你比較有感的是哪一個？',
-    ],
-    lineCallToAction: [
-      '你這次的結果，主要是「壓力型＋胰島素型」',
-      '通常會有兩個調整方向',
-      '直接把結果複製傳LINE給我就好',
-    ],
-  };
-}
+    coreIssue: ['你現在的問題不是吃太多、動太少','而是：身體沒有回到「正常燃燒模式」','不是你瘦不下來，是身體還沒準備好變瘦'],
+    adjustDirection: ['① 從「基礎代謝修復」開始 → 讓身體能運作','② 從「血糖／壓力調整」開始 → 讓脂肪不再囤積','你比較有感的是哪一個？'],
+    lineCallToAction: ['你這次的結果，主要是「壓力型＋胰島素型」','通常會有兩個調整方向','直接把結果複製傳LINE給我就好'],
+  }; }
 </script>
 </body>
 </html>
