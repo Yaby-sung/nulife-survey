@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>睡眠快速評估｜抗老研究室</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2236; --card: #151d2e;
+    --bg: #0a0e1a; --bg3: #1a2236; --card: #151d2e;
     --border: #1e2d45; --accent: #7eb8f7; --accent2: #a78bfa;
     --gold: #e2b96f; --text: #e8edf5; --text2: #8a9bbf; --text3: #4a5a7a; --radius: 16px;
   }
@@ -48,21 +49,64 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; color: var(--text2); letter-spacing: 1px; }
   #result { display: none; }
-  .result-header { text-align: center; padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 16px; }
-  .result-title { font-family: 'Noto Serif TC', serif; font-size: clamp(24px, 6vw, 36px); font-weight: 600; line-height: 1.3; margin-bottom: 8px; background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .result-secondary { font-size: 14px; color: var(--text2); margin-top: 12px; }
-  .result-secondary strong { color: var(--accent2); font-weight: 500; }
-  .scores-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
-  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .score-row:last-child { margin-bottom: 0; }
-  .score-name { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; }
-  .score-track { flex: 1; height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
-  .score-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.4,0,.2,1); }
-  .score-fill.stress       { background: linear-gradient(90deg, #7eb8f7, #a78bfa); }
-  .score-fill.inflammation { background: linear-gradient(90deg, #f97316, #ef4444); }
-  .score-fill.structure    { background: linear-gradient(90deg, #4ade80, #06b6d4); }
-  .score-val { font-size: 12px; color: var(--text3); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* ── 主次類型 Hero ── */
+  .type-hero {
+    text-align: center;
+    padding: 40px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 20px; }
+  .primary-type {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 600;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .primary-label { font-size: 11px; letter-spacing: 2px; color: var(--text3); margin-bottom: 20px; }
+  .secondary-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    
+  }
+  .secondary-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; }
+  .secondary-type { font-size: 15px; color: var(--accent2); font-family: 'Noto Serif TC', serif; font-weight: 600; }
+
+  /* ── 雷達圖（在標題下方）── */
+  .radar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin: 20px 0 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .radar-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(126,184,247,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .radar-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text3);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .radar-canvas { max-width: 300px; margin: 0 auto; display: block; }
+
+  /* ── 內容區塊 ── */
   .r-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px; }
   .r-block-title { font-size: 11px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .r-line { font-size: 14px; color: var(--text2); line-height: 1.8; padding: 4px 0; display: flex; align-items: flex-start; gap: 10px; }
@@ -75,17 +119,63 @@
   .layer-card { background: var(--bg3); border: 1px solid rgba(226,185,111,0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; }
   .layer-lv { font-size: 11px; color: var(--gold); letter-spacing: 2px; margin-bottom: 6px; }
   .layer-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
-  .line-cta { background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%); border: 1px solid rgba(226,185,111,0.4); border-radius: var(--radius); padding: 32px 28px; margin-bottom: 20px; text-align: center; position: relative; overflow: hidden; }
+
+  /* ── LINE CTA ── */
+  .line-cta {
+    background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%);
+    border: 1px solid rgba(226,185,111,0.4);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
   .line-cta::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
-  .line-cta::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .line-cta::after  { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
   .line-cta-title { font-family: 'Noto Serif TC', serif; font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 16px; letter-spacing: 2px; }
-  .line-cta-result { font-family: 'Noto Serif TC', serif; font-size: 15px; color: var(--gold); margin-bottom: 16px; padding: 12px 16px; border: 1px solid rgba(226,185,111,0.25); border-radius: 8px; background: rgba(226,185,111,0.06); line-height: 1.8; }
-  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 20px; }
+
+  /* 主次類型摘要（不顯示分數）*/
+  .line-cta-result {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    color: var(--gold);
+    margin-bottom: 20px;
+    padding: 16px;
+    border: 1px solid rgba(226,185,111,0.25);
+    border-radius: 10px;
+    background: rgba(226,185,111,0.06);
+    line-height: 2;
+  }
+  .cta-primary-label { font-size: 12px; color: rgba(226,185,111,0.55); letter-spacing: 1px; display: block; margin-bottom: 4px; }
+  .cta-primary-text { font-size: clamp(28px, 7vw, 40px); font-weight: 600; color: var(--gold); display: block; margin-bottom: 4px; line-height: 1.2; }
+  .cta-secondary-label { font-size: 12px; color: rgba(226,185,111,0.55); letter-spacing: 1px; display: block; margin-bottom: 4px; margin-top: 16px; }
+  .cta-secondary-text { font-size: clamp(22px, 5vw, 32px); font-weight: 600; color: rgba(226,185,111,0.8); display: block; line-height: 1.2; }
+
+  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 24px; }
   .line-cta .r-line { color: rgba(226,185,111,0.75); }
   .line-cta .r-line::before { color: rgba(226,185,111,0.35); }
-  .line-cta-copy { display: block; width: 100%; background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c); border: none; border-radius: 8px; padding: 14px 28px; font-size: 14px; color: #0d0d0d; font-weight: 600; letter-spacing: 2px; font-family: 'Noto Serif TC', serif; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
-  .line-cta-copy:hover { opacity: 0.85; }
-  .copy-success { display: none; margin-top: 12px; font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+  .cta-instruction { font-size: 13px; color: rgba(226,185,111,0.55); margin-bottom: 14px; letter-spacing: 1px; }
+
+  /* 大按鈕 */
+  .line-cta-copy {
+    display: block; width: 100%;
+    background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c);
+    border: none; border-radius: 14px;
+    padding: 22px 28px;
+    font-size: 20px;
+    color: #0d0d0d; font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Noto Serif TC', serif;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    line-height: 1.5;
+    box-shadow: 0 4px 24px rgba(226,185,111,0.25);
+  }
+  .line-cta-copy:hover { opacity: 0.92; transform: translateY(-3px); box-shadow: 0 8px 32px rgba(226,185,111,0.35); }
+  .line-cta-copy:active { transform: translateY(0); }
+  .copy-success { display: none; margin-top: 16px; font-size: 15px; color: var(--gold); letter-spacing: 1px; font-weight: 500; }
+
   .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #fca5a5; margin-bottom: 16px; display: none; }
   .q-card.unanswered { border-color: rgba(239,68,68,0.5); animation: shake 0.3s ease; }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
@@ -108,7 +198,6 @@
       </div>
       <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
     </div>
-
     
     <div class="q-card" id="card-1">
       <div class="q-num">01</div>
@@ -185,7 +274,6 @@
       <div class="q-text">身體某些部位會卡住影響睡眠</div>
       <div class="q-options" data-q="15"></div>
     </div>
-
     <div class="email-section">
       <label class="email-label" for="email-input">輸入 Email，將結果寄給你（選填）</label>
       <input class="email-input" id="email-input" type="email" placeholder="your@email.com">
@@ -207,16 +295,20 @@
 
 <div id="result">
   <div class="wrap">
-    <div class="result-header">
+
+    <!-- 主次類型 Hero -->
+    <div class="type-hero">
       <div class="result-eyebrow">抗老研究室｜睡眠分析報告</div>
-      <div class="result-title" id="r-primary">—</div>
-      <div class="result-secondary">並伴隨部分 <strong id="r-secondary">—</strong> 的影響</div>
+      <div class="primary-type" id="r-primary">—</div>
+      <div class="secondary-wrap">
+        <span class="secondary-label">並伴隨部分 </span><span class="secondary-type" id="r-secondary">—</span><span class="secondary-label"> 的影響</span>
+      </div>
     </div>
 
-    <div class="scores-wrap">
-      <div class="score-row"><span class="score-name">壓力型</span><div class="score-track"><div class="score-fill stress" id="bar-stress" style="width:0%"></div></div><span class="score-val" id="val-stress">0/15</span></div>
-      <div class="score-row"><span class="score-name">發炎型</span><div class="score-track"><div class="score-fill inflammation" id="bar-inflammation" style="width:0%"></div></div><span class="score-val" id="val-inflammation">0/15</span></div>
-      <div class="score-row"><span class="score-name">結構型</span><div class="score-track"><div class="score-fill structure" id="bar-structure" style="width:0%"></div></div><span class="score-val" id="val-structure">0/15</span></div>
+    <!-- 雷達圖（標題下方第一段）-->
+    <div class="radar-wrap">
+      <div class="radar-title">睡眠狀態分析</div>
+      <canvas class="radar-canvas" id="radarChart"></canvas>
     </div>
 
     <div class="r-block"><div class="r-block-title">你的睡眠狀態</div><div id="r-opening"></div></div>
@@ -228,11 +320,24 @@
 
     <div class="line-cta">
       <div class="line-cta-title">想了解更多？</div>
-      <div class="line-cta-result" id="r-cta-result"></div>
+      <div class="line-cta-result" id="r-cta-result">
+        <div class="cta-primary-row">
+          <span class="cta-primary-label">主類型｜</span>
+          <span class="cta-primary-text" id="cta-primary">—</span>
+        </div>
+        <div class="cta-secondary-row">
+          <span class="cta-secondary-label">次類型｜</span>
+          <span class="cta-secondary-text" id="cta-secondary">—</span>
+        </div>
+      </div>
       <div class="line-cta-lines" id="r-line-cta"></div>
-      <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">複製我的分析結果</button>
-      <div class="copy-success" id="copy-success">✓ 已複製！貼到 LINE 傳給我們</div>
+      <div class="cta-instruction">👇 點擊下方按鈕，複製結果後傳給我們</div>
+      <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">
+        📋 複製分析結果<br>回傳到 LINE 官方
+      </button>
+      <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
     </div>
+
   </div>
 </div>
 
@@ -294,27 +399,75 @@ async function submitSurvey() {
   } catch (e) { showResult(mockResult()); }
 }
 
+let radarChart = null;
+
+function animateRadar(chart, targetData) {
+  const steps = 40;
+  let step = 0;
+  const timer = setInterval(() => {
+    step++;
+    const progress = step / steps;
+    const ease = 1 - Math.pow(1 - progress, 3);
+    chart.data.datasets[0].data = targetData.map(v => v * ease);
+    chart.update('none');
+    if (step >= steps) clearInterval(timer);
+  }, 20);
+}
+
 function showResult(data) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  document.getElementById('r-primary').textContent   = data.headline.primary;
-  document.getElementById('r-secondary').textContent = data.headline.secondary;
+
+  const primary   = data.headline.primary;
+  const secondary = data.headline.secondary;
+  document.getElementById('r-primary').textContent   = primary;
+  document.getElementById('r-secondary').textContent = secondary;
+  document.getElementById('cta-primary').textContent   = primary;
+  document.getElementById('cta-secondary').textContent = secondary;
+
   const s = data.scores;
-  const ctaResult = document.getElementById('r-cta-result');
-  if (ctaResult) {
-    ctaResult.innerHTML =
-      '主類型：' + data.headline.primary + '<br>' +
-      '次類型：' + data.headline.secondary + '<br><br>' +
-      '壓力型：'  + (s.stress       ?? '-') + ' 分<br>' +
-      '發炎型：'  + (s.inflammation ?? '-') + ' 分<br>' +
-      '結構型：'  + (s.structure    ?? '-') + ' 分';
-  }
+
+  // 雷達圖（科技動態）
   setTimeout(() => {
-    setBar('stress',       s.stress,       15);
-    setBar('inflammation', s.inflammation, 15);
-    setBar('structure',    s.structure,    15);
-  }, 300);
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['壓力型', '發炎型', '結構型'],
+        datasets: [{
+          data: [0, 0, 0],
+          backgroundColor: 'rgba(226,185,111,0.12)',
+          borderColor: 'rgba(226,185,111,0.9)',
+          borderWidth: 2,
+          pointBackgroundColor: ['rgba(226,185,111,1)', 'rgba(201,168,76,1)', 'rgba(240,200,120,1)'],
+          pointBorderColor: 'transparent',
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            min: 0, max: 15,
+            ticks: { display: false, stepSize: 5 },
+            grid: { color: 'rgba(126,184,247,0.08)' },
+            angleLines: { color: 'rgba(126,184,247,0.12)' },
+            pointLabels: {
+              color: '#e2b96f',
+              font: { size: 13, family: 'Noto Sans TC' },
+            },
+          }
+        }
+      }
+    });
+    animateRadar(radarChart, [s.stress, s.inflammation, s.structure]);
+  }, 400);
+
   renderLines('r-opening',   data.opening);
   renderLines('r-type-desc', data.typeDesc);
   renderLines('r-situation', data.situation);
@@ -322,11 +475,6 @@ function showResult(data) {
   renderLines('r-core',      data.coreIssue);
   renderLines('r-adjust',    data.adjustDirection);
   renderLines('r-line-cta',  data.lineCallToAction);
-}
-
-function setBar(key, score, max) {
-  document.getElementById(`bar-${key}`).style.width = `${Math.round(score / max * 100)}%`;
-  document.getElementById(`val-${key}`).textContent = `${score}/${max}`;
 }
 
 function renderLines(id, lines) {
@@ -349,9 +497,12 @@ function copyResult() {
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
-    btn.textContent = '✓ 已複製！';
+    btn.innerHTML = '✓ 已複製！';
     if (suc) suc.style.display = 'block';
-    setTimeout(() => { btn.textContent = '複製我的分析結果'; if (suc) suc.style.display = 'none'; }, 3000);
+    setTimeout(() => {
+      btn.innerHTML = '📋 複製分析結果<br>回傳到 LINE 官方';
+      if (suc) suc.style.display = 'none';
+    }, 3000);
   });
 }
 
@@ -359,42 +510,17 @@ function mockResult() {
   return {
     headline: { primary: '壓力型（神經）', secondary: '發炎型（身體）' },
     scores: { stress: 12, inflammation: 8, structure: 4 },
-    opening: [
-      '我看了你的測試結果',
-      '其實你的狀態，不是單純「睡不好」',
-      '比較像是：身體累，但沒有真正休息到',
-    ],
-    typeDesc: [
-      '你的狀態比較像：「身體想睡，但神經還醒著」',
-      '✔ 很累但停不下來',
-      '✔ 容易淺眠或醒來',
-      '✔ 睡完還是累',
-      '這不是睡眠問題，是「放鬆系統沒有打開」',
-    ],
-    situation: [
-      '☀️ 白天：精神差、容易累、專注力下降',
-      '🌙 晚上：想睡但睡不好，或睡了但不深',
-      '📉 長期：越睡越累、身體開始失衡',
-    ],
+    opening: ['我看了你的測試結果','你的睡眠狀態偏向：「壓力型（神經）」','並伴隨部分「發炎型（身體）」的影響','其實你的狀態，不是單純「睡不好」','比較像是：身體累，但沒有真正休息到'],
+    typeDesc: ['你的狀態比較像：「身體想睡，但神經還醒著」','✔ 很累但停不下來','✔ 容易淺眠或醒來','✔ 睡完還是累','這不是睡眠問題，是「放鬆系統沒有打開」'],
+    situation: ['☀️ 白天：精神差、容易累、專注力下降','🌙 晚上：想睡但睡不好，或睡了但不深','📉 長期：越睡越累、身體開始失衡'],
     layers: [
       { lv: 'Lv3｜神經層（主）', desc: '壓力與自律神經持續過載，放鬆系統無法打開，是你目前最需要穩定的層面。' },
       { lv: 'Lv2｜發炎層（次）', desc: '身體慢性發炎干擾睡眠深度，讓修復效率下降。' },
       { lv: 'Lv1｜細胞修復層（基底）', desc: '睡眠「補不回來」的根本原因，細胞修復力是睡眠品質的基礎。' },
     ],
-    coreIssue: [
-      '你現在的問題不是睡不夠',
-      '而是：身體沒有進入「修復狀態」',
-    ],
-    adjustDirection: [
-      '① 從「神經放鬆」開始 → 讓身體先進入睡眠',
-      '② 從「身體修復」開始 → 讓睡眠變深',
-      '你比較有感的是哪一個？',
-    ],
-    lineCallToAction: [
-      '你這次的狀態，主要是「壓力型＋發炎型」',
-      '通常會有兩個調整方向',
-      '直接把結果複製傳LINE給我就好',
-    ],
+    coreIssue: ['你現在的問題不是睡不夠','而是：身體沒有進入「修復狀態」'],
+    adjustDirection: ['① 從「神經放鬆」開始 → 讓身體先進入睡眠','② 從「身體修復」開始 → 讓睡眠變深','你比較有感的是哪一個？'],
+    lineCallToAction: ['你這次的狀態，主要是「壓力型＋發炎型」','通常會有兩個調整方向','直接把結果複製傳LINE給我就好'],
   };
 }
 </script>
