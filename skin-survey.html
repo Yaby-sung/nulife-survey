@@ -5,9 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>肌膚管理檢測｜抗老研究室</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2236; --card: #151d2e; --border: #1e2d45; --accent: #7eb8f7; --accent2: #a78bfa; --gold: #e2b96f; --text: #e8edf5; --text2: #8a9bbf; --text3: #4a5a7a; --radius: 16px; }
+  :root {
+    --bg: #0a0e1a; --bg3: #1a2236; --card: #151d2e;
+    --border: #1e2d45; --accent: #7eb8f7; --accent2: #a78bfa;
+    --gold: #e2b96f; --text: #e8edf5; --text2: #8a9bbf; --text3: #4a5a7a; --radius: 16px;
+  }
   body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', sans-serif; min-height: 100vh; overflow-x: hidden; }
   body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 50% at 20% 20%, rgba(126,184,247,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 60%); pointer-events: none; z-index: 0; }
   .wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 0 20px 80px; }
@@ -44,24 +49,64 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; color: var(--text2); letter-spacing: 1px; }
   #result { display: none; }
-  .result-header { text-align: center; padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 16px; }
-  .result-title { font-family: 'Noto Serif TC', serif; font-size: clamp(24px, 6vw, 36px); font-weight: 600; line-height: 1.3; margin-bottom: 8px; background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .result-secondary { font-size: 14px; color: var(--text2); margin-top: 12px; }
-  .result-secondary strong { color: var(--accent2); font-weight: 500; }
-  .scores-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
-  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .score-row:last-child { margin-bottom: 0; }
-  .score-name { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; }
-  .score-track { flex: 1; height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
-  .score-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.4,0,.2,1); }
-  .score-fill.moisture  { background: linear-gradient(90deg, #7eb8f7, #06b6d4); }
-  .score-fill.oil       { background: linear-gradient(90deg, #f59e0b, #f97316); }
-  .score-fill.sensitive { background: linear-gradient(90deg, #f97316, #ef4444); }
-  .score-fill.sagging   { background: linear-gradient(90deg, #a78bfa, #ec4899); }
-  .score-fill.dull      { background: linear-gradient(90deg, #6b7280, #9ca3af); }
-  .score-fill.aging     { background: linear-gradient(90deg, #4ade80, #06b6d4); }
-  .score-val { font-size: 12px; color: var(--text3); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* ── 主次類型 Hero ── */
+  .type-hero {
+    text-align: center;
+    padding: 40px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 20px; }
+  .primary-type {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 600;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .primary-label { font-size: 11px; letter-spacing: 2px; color: var(--text3); margin-bottom: 20px; }
+  .secondary-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    
+  }
+  .secondary-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; }
+  .secondary-type { font-size: 15px; color: var(--accent2); font-family: 'Noto Serif TC', serif; font-weight: 600; }
+
+  /* ── 雷達圖（在標題下方）── */
+  .radar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin: 20px 0 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .radar-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(126,184,247,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .radar-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text3);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .radar-canvas { max-width: 300px; margin: 0 auto; display: block; }
+
+  /* ── 內容區塊 ── */
   .r-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px; }
   .r-block-title { font-size: 11px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .r-line { font-size: 14px; color: var(--text2); line-height: 1.8; padding: 4px 0; display: flex; align-items: flex-start; gap: 10px; }
@@ -74,17 +119,63 @@
   .layer-card { background: var(--bg3); border: 1px solid rgba(226,185,111,0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; }
   .layer-lv { font-size: 11px; color: var(--gold); letter-spacing: 2px; margin-bottom: 6px; }
   .layer-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
-  .line-cta { background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%); border: 1px solid rgba(226,185,111,0.4); border-radius: var(--radius); padding: 32px 28px; margin-bottom: 20px; text-align: center; position: relative; overflow: hidden; }
+
+  /* ── LINE CTA ── */
+  .line-cta {
+    background: linear-gradient(135deg, #1a1408 0%, #0d0d0d 100%);
+    border: 1px solid rgba(226,185,111,0.4);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
   .line-cta::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
-  .line-cta::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .line-cta::after  { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
   .line-cta-title { font-family: 'Noto Serif TC', serif; font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 16px; letter-spacing: 2px; }
-  .line-cta-result { font-family: 'Noto Serif TC', serif; font-size: 15px; color: var(--gold); margin-bottom: 16px; padding: 12px 16px; border: 1px solid rgba(226,185,111,0.25); border-radius: 8px; background: rgba(226,185,111,0.06); line-height: 1.8; }
-  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 20px; }
+
+  /* 主次類型摘要（不顯示分數）*/
+  .line-cta-result {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    color: var(--gold);
+    margin-bottom: 20px;
+    padding: 16px;
+    border: 1px solid rgba(226,185,111,0.25);
+    border-radius: 10px;
+    background: rgba(226,185,111,0.06);
+    line-height: 2;
+  }
+  .cta-primary-label { font-size: 12px; color: rgba(226,185,111,0.55); letter-spacing: 1px; display: block; margin-bottom: 4px; }
+  .cta-primary-text { font-size: clamp(28px, 7vw, 40px); font-weight: 600; color: var(--gold); display: block; margin-bottom: 4px; line-height: 1.2; }
+  .cta-secondary-label { font-size: 12px; color: rgba(226,185,111,0.55); letter-spacing: 1px; display: block; margin-bottom: 4px; margin-top: 16px; }
+  .cta-secondary-text { font-size: clamp(22px, 5vw, 32px); font-weight: 600; color: rgba(226,185,111,0.8); display: block; line-height: 1.2; }
+
+  .line-cta-lines { font-size: 13px; color: rgba(226,185,111,0.7); line-height: 2.2; margin-bottom: 24px; }
   .line-cta .r-line { color: rgba(226,185,111,0.75); }
   .line-cta .r-line::before { color: rgba(226,185,111,0.35); }
-  .line-cta-copy { display: block; width: 100%; background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c); border: none; border-radius: 8px; padding: 14px 28px; font-size: 14px; color: #0d0d0d; font-weight: 600; letter-spacing: 2px; font-family: 'Noto Serif TC', serif; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
-  .line-cta-copy:hover { opacity: 0.85; }
-  .copy-success { display: none; margin-top: 12px; font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+  .cta-instruction { font-size: 13px; color: rgba(226,185,111,0.55); margin-bottom: 14px; letter-spacing: 1px; }
+
+  /* 大按鈕 */
+  .line-cta-copy {
+    display: block; width: 100%;
+    background: linear-gradient(135deg, #c9a84c, #e2b96f, #c9a84c);
+    border: none; border-radius: 14px;
+    padding: 22px 28px;
+    font-size: 20px;
+    color: #0d0d0d; font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Noto Serif TC', serif;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    line-height: 1.5;
+    box-shadow: 0 4px 24px rgba(226,185,111,0.25);
+  }
+  .line-cta-copy:hover { opacity: 0.92; transform: translateY(-3px); box-shadow: 0 8px 32px rgba(226,185,111,0.35); }
+  .line-cta-copy:active { transform: translateY(0); }
+  .copy-success { display: none; margin-top: 16px; font-size: 15px; color: var(--gold); letter-spacing: 1px; font-weight: 500; }
+
   .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #fca5a5; margin-bottom: 16px; display: none; }
   .q-card.unanswered { border-color: rgba(239,68,68,0.5); animation: shake 0.3s ease; }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
@@ -263,10 +354,9 @@
       <p class="email-note">僅用於寄送分析報告，不會用於其他用途</p>
     </div>
     <div class="error-msg" id="error-msg">請完成所有題目後再送出 ✦</div>
-    <button class="submit-btn" onclick="submitSurvey()">查看我的肌膚分析結果</button>
+    <button class="submit-btn" onclick="submitSurvey()">查看我的分析結果</button>
   </div>
 </div>
-
 <div id="loading">
   <div class="wrap">
     <div style="padding-top: 80px; text-align: center;">
@@ -275,38 +365,46 @@
     </div>
   </div>
 </div>
-
 <div id="result">
   <div class="wrap">
-    <div class="result-header">
+    <div class="type-hero">
       <div class="result-eyebrow">抗老研究室｜肌膚分析報告</div>
-      <div class="result-title" id="r-primary">—</div>
-      <div class="result-secondary">並伴隨部分 <strong id="r-secondary">—</strong> 的影響</div>
+      <div class="primary-type" id="r-primary">—</div>
+      <div class="secondary-wrap">
+        <span class="secondary-label">並伴隨部分 </span><span class="secondary-type" id="r-secondary">—</span><span class="secondary-label"> 的影響</span>
+      </div>
     </div>
-    <div class="scores-wrap">
-      <div class="score-row"><span class="score-name">水分流失型</span><div class="score-track"><div class="score-fill moisture" id="bar-moisture" style="width:0%"></div></div><span class="score-val" id="val-moisture">0/15</span></div>
-      <div class="score-row"><span class="score-name">油脂失衡型</span><div class="score-track"><div class="score-fill oil" id="bar-oil" style="width:0%"></div></div><span class="score-val" id="val-oil">0/15</span></div>
-      <div class="score-row"><span class="score-name">敏感修復型</span><div class="score-track"><div class="score-fill sensitive" id="bar-sensitive" style="width:0%"></div></div><span class="score-val" id="val-sensitive">0/15</span></div>
-      <div class="score-row"><span class="score-name">鬆弛下垂型</span><div class="score-track"><div class="score-fill sagging" id="bar-sagging" style="width:0%"></div></div><span class="score-val" id="val-sagging">0/15</span></div>
-      <div class="score-row"><span class="score-name">暗沉斑點型</span><div class="score-track"><div class="score-fill dull" id="bar-dull" style="width:0%"></div></div><span class="score-val" id="val-dull">0/15</span></div>
-      <div class="score-row"><span class="score-name">基因老化型</span><div class="score-track"><div class="score-fill aging" id="bar-aging" style="width:0%"></div></div><span class="score-val" id="val-aging">0/15</span></div>
+    <div class="radar-wrap">
+      <div class="radar-title">肌膚分析報告</div>
+      <canvas class="radar-canvas" id="radarChart"></canvas>
     </div>
-    <div class="r-block"><div class="r-block-title">你的肌膚狀態</div><div id="r-opening"></div></div>
+    <div class="r-block"><div class="r-block-title">你的狀態</div><div id="r-opening"></div></div>
     <div class="r-block"><div class="r-block-title">你目前的狀況</div><div id="r-type-desc"></div></div>
     <div class="r-block"><div class="r-block-title">你可能會有的情況</div><div id="r-situation"></div></div>
-    <div class="r-block"><div class="r-block-title">影響你肌膚的三個層面</div><div id="r-layers"></div></div>
+    <div class="r-block"><div class="r-block-title">影響你的三個層面</div><div id="r-layers"></div></div>
     <div class="r-block r-core"><div class="r-block-title">關鍵核心</div><div id="r-core"></div></div>
     <div class="r-block r-brand"><div class="r-block-title">調整方向</div><div id="r-adjust"></div></div>
     <div class="line-cta">
       <div class="line-cta-title">想了解更多？</div>
-      <div class="line-cta-result" id="r-cta-result"></div>
+      <div class="line-cta-result">
+        <div class="cta-primary-row">
+          <span class="cta-primary-label">主類型｜</span>
+          <span class="cta-primary-text" id="cta-primary">—</span>
+        </div>
+        <div class="cta-secondary-row">
+          <span class="cta-secondary-label">次類型｜</span>
+          <span class="cta-secondary-text" id="cta-secondary">—</span>
+        </div>
+      </div>
       <div class="line-cta-lines" id="r-line-cta"></div>
-      <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">複製我的分析結果</button>
-      <div class="copy-success" id="copy-success">✓ 已複製！貼到 LINE 傳給我們</div>
+      <div class="cta-instruction">👇 點擊下方按鈕，複製結果後傳給我們</div>
+      <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">
+        📋 複製分析結果<br>回傳到 LINE 官方
+      </button>
+      <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
     </div>
   </div>
 </div>
-
 <script>
 const TOTAL = 30;
 const OPTIONS = [
@@ -316,6 +414,8 @@ const OPTIONS = [
   { score: 3, label: '幾乎每天' },
 ];
 const answers = {};
+const RADAR_LABELS = ['水分流失', '油脂失衡', '敏感修復', '鬆弛下垂', '暗沉斑點', '基因老化'];
+const RADAR_KEYS = ['moisture', 'oil', 'sensitive', 'sagging', 'dull', 'aging'];
 
 document.querySelectorAll('.q-options').forEach(wrap => {
   const q = +wrap.dataset.q;
@@ -365,52 +465,77 @@ async function submitSurvey() {
   } catch (e) { showResult(mockResult()); }
 }
 
+let radarChart = null;
+
+function animateRadar(chart, targetData) {
+  const steps = 40; let step = 0;
+  const timer = setInterval(() => {
+    step++;
+    const ease = 1 - Math.pow(1 - step/steps, 3);
+    chart.data.datasets[0].data = targetData.map(v => v * ease);
+    chart.update('none');
+    if (step >= steps) clearInterval(timer);
+  }, 20);
+}
+
 function showResult(data) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  document.getElementById('r-primary').textContent   = data.headline.primary;
-  document.getElementById('r-secondary').textContent = data.headline.secondary;
+  const primary = data.headline.primary;
+  const secondary = data.headline.secondary;
+  document.getElementById('r-primary').textContent = primary;
+  document.getElementById('r-secondary').textContent = secondary;
+  document.getElementById('cta-primary').textContent = primary;
+  document.getElementById('cta-secondary').textContent = secondary;
   const s = data.scores;
-  const ctaResult = document.getElementById('r-cta-result');
-  if (ctaResult) {
-    ctaResult.innerHTML =
-      '主類型：' + data.headline.primary + '<br>' +
-      '次類型：' + data.headline.secondary + '<br><br>' +
-      '水分流失：' + (s.moisture  ?? '-') + ' 分<br>' +
-      '油脂失衡：' + (s.oil       ?? '-') + ' 分<br>' +
-      '敏感修復：' + (s.sensitive ?? '-') + ' 分<br>' +
-      '鬆弛下垂：' + (s.sagging  ?? '-') + ' 分<br>' +
-      '暗沉斑點：' + (s.dull     ?? '-') + ' 分<br>' +
-      '基因老化：' + (s.aging    ?? '-') + ' 分';
-  }
+  const vals = RADAR_KEYS.map(k => typeof s[k] === 'object' ? s[k].score : (s[k] ?? 0));
   setTimeout(() => {
-    setBar('moisture',  s.moisture,  15);
-    setBar('oil',       s.oil,       15);
-    setBar('sensitive', s.sensitive, 15);
-    setBar('sagging',   s.sagging,   15);
-    setBar('dull',      s.dull,      15);
-    setBar('aging',     s.aging,     15);
-  }, 300);
-  renderLines('r-opening',   data.opening);
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: RADAR_LABELS,
+        datasets: [{
+          data: RADAR_LABELS.map(() => 0),
+          backgroundColor: 'rgba(226,185,111,0.12)',
+          borderColor: 'rgba(226,185,111,0.9)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(226,185,111,1)',
+          pointBorderColor: 'transparent',
+          pointRadius: 5, pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true, animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            min: 0, max: 15,
+            ticks: { display: false },
+            grid: { color: 'rgba(138,155,191,0.3)' },
+            angleLines: { color: 'rgba(138,155,191,0.3)' },
+            pointLabels: { color: '#e2b96f', font: { size: 13, family: 'Noto Sans TC' } },
+          }
+        }
+      }
+    });
+    animateRadar(radarChart, vals);
+  }, 400);
+  renderLines('r-opening', data.opening);
   renderLines('r-type-desc', data.typeDesc);
   renderLines('r-situation', data.situation);
-  renderLayers('r-layers',   data.layers);
-  renderLines('r-core',      data.coreIssue);
-  renderLines('r-adjust',    data.adjustDirection);
-  renderLines('r-line-cta',  data.lineCallToAction);
-}
-
-function setBar(key, score, max) {
-  document.getElementById(`bar-${key}`).style.width = `${Math.round(score / max * 100)}%`;
-  document.getElementById(`val-${key}`).textContent = `${score}/${max}`;
+  renderLayers('r-layers', data.layers);
+  renderLines('r-core', data.coreIssue);
+  renderLines('r-adjust', data.adjustDirection);
+  renderLines('r-line-cta', data.lineCallToAction);
 }
 
 function renderLines(id, lines) {
   const el = document.getElementById(id);
   if (el) el.innerHTML = (lines || []).map(l => `<div class="r-line">${l}</div>`).join('');
 }
-
 function renderLayers(id, layers) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -418,67 +543,33 @@ function renderLayers(id, layers) {
     `<div class="layer-card"><div class="layer-lv">${l.lv}</div><div class="layer-desc">${l.desc}</div></div>`
   ).join('');
 }
-
 function copyResult() {
-  const primary   = document.getElementById('r-primary').textContent;
+  const primary = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
   const text = '我的肌膚屬於 主類型：' + primary + ' 次類型：' + secondary;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
-    btn.textContent = '✓ 已複製！';
+    btn.innerHTML = '✓ 已複製！';
     if (suc) suc.style.display = 'block';
-    setTimeout(() => { btn.textContent = '複製我的分析結果'; if (suc) suc.style.display = 'none'; }, 3000);
+    setTimeout(() => { btn.innerHTML = '📋 複製分析結果<br>回傳到 LINE 官方'; if (suc) suc.style.display = 'none'; }, 3000);
   });
 }
-
-function mockResult() {
-  return {
+function mockResult() { return {
     headline: { primary: '敏感修復型（屏障）', secondary: '水分流失型（乾燥）' },
     scores: { moisture: 9, oil: 5, sensitive: 12, sagging: 4, dull: 6, aging: 3 },
-    opening: [
-      '我看了你的測試結果',
-      '你的肌膚狀態偏向：「敏感修復型（屏障）」',
-      '並伴隨部分「水分流失型（乾燥）」的影響',
-      '其實你的狀態，不是單純「皮膚不好」',
-      '皮膚正在反映身體的狀態',
-      '肌膚是「表現」，真正的原因，在身體裡',
-    ],
-    typeDesc: [
-      '你的皮膚比較像：「防禦力下降」',
-      '✔ 容易泛紅、刺痛',
-      '✔ 保養品容易不適',
-      '✔ 天氣變化就不穩',
-      '不是皮膚差，是屏障受損',
-    ],
-    situation: [
-      '☀️ 白天：容易出油／乾／暗、膚況不穩',
-      '🌙 晚上：修復效果差、保養感受有限',
-      '📉 長期：膚況反覆，或持續變差',
-      '這些其實都是身體在失衡',
-    ],
+    opening: ['我看了你的測試結果','你的肌膚狀態偏向：「敏感修復型（屏障）」','並伴隨部分「水分流失型（乾燥）」的影響','其實你的狀態，不是單純「皮膚不好」','皮膚正在反映身體的狀態','肌膚是「表現」，真正的原因，在身體裡'],
+    typeDesc: ['你的皮膚比較像：「防禦力下降」','✔ 容易泛紅、刺痛','✔ 保養品容易不適','✔ 天氣變化就不穩','不是皮膚差，是屏障受損'],
+    situation: ['☀️ 白天：容易出油／乾／暗、膚況不穩','🌙 晚上：修復效果差、保養感受有限','📉 長期：膚況反覆，或持續變差','這些其實都是身體在失衡'],
     layers: [
       { lv: 'Lv2｜發炎與屏障層（主）', desc: '皮膚屏障受損讓外在刺激容易穿透，導致持續發炎與敏感反應。' },
       { lv: 'Lv1｜細胞保水層（次）', desc: '細胞保水能力下降讓皮膚容易乾燥，削弱屏障修復效率。' },
       { lv: 'Lv1｜細胞修復層（基底）', desc: '皮膚能不能穩定變好，根本在細胞修復力，需要優先補足。' },
     ],
-    coreIssue: [
-      '你現在的問題不是保養不夠',
-      '而是：身體沒有在「修復皮膚」',
-      '不是你保養沒用，是身體還沒準備好吸收',
-    ],
-    adjustDirection: [
-      '① 從「細胞抗氧化」開始 → 讓皮膚穩定＋變亮',
-      '② 從「發炎或壓力調整」開始 → 讓皮膚不再反覆',
-      '你比較有感的是哪一個？',
-    ],
-    lineCallToAction: [
-      '你這次的結果，主要是「敏感修復型＋水分流失型」',
-      '通常會有兩個調整方向',
-      '直接把結果複製傳LINE給我就好',
-    ],
-  };
-}
+    coreIssue: ['你現在的問題不是保養不夠','而是：身體沒有在「修復皮膚」','不是你保養沒用，是身體還沒準備好吸收'],
+    adjustDirection: ['① 從「細胞抗氧化」開始 → 讓皮膚穩定＋變亮','② 從「發炎或壓力調整」開始 → 讓皮膚不再反覆','你比較有感的是哪一個？'],
+    lineCallToAction: ['你這次的結果，主要是「敏感修復型＋水分流失型」','通常會有兩個調整方向','直接把結果複製傳LINE給我就好'],
+  }; }
 </script>
 </body>
 </html>
