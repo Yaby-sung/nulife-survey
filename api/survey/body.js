@@ -1,5 +1,5 @@
 // ============================================================
-// 抗老研究室｜體態管理檢測（v2）
+// 抗老研究室｜體態管理檢測（v3）
 // Vercel Serverless Function: /api/survey/body.js
 // ============================================================
 
@@ -21,49 +21,33 @@ const TYPE_LABEL = {
   gene:     '基因表現型（代謝改變）',
 };
 
+// 複製用簡短名稱（無括號）
+const TYPE_SHORT = {
+  diet:     '飲食型',
+  exercise: '運動型',
+  stress:   '壓力型',
+  insulin:  '胰島素型',
+  survival: '保命機制型',
+  gene:     '基因表現型',
+};
+
+// 15種組合的固定順序（字典序，小的永遠在前）
+const TYPE_ORDER = ['diet', 'exercise', 'stress', 'insulin', 'survival', 'gene'];
+
+// 取得固定15種組合的主次（依照 TYPE_ORDER 順序，index小的在前）
+function getNormalizedPair(keyA, keyB) {
+  const idxA = TYPE_ORDER.indexOf(keyA);
+  const idxB = TYPE_ORDER.indexOf(keyB);
+  return idxA <= idxB ? [keyA, keyB] : [keyB, keyA];
+}
+
 const TYPE_DESC = {
-  diet: [
-    '你的狀態比較像：「能量輸入過多但用不掉」',
-    '✔ 吃多、重口味',
-    '✔ 容易累',
-    '✔ 蔬菜攝取不足',
-    '不是吃太多，是身體不會用',
-  ],
-  exercise: [
-    '你的狀態比較像：「燃燒能力不足」',
-    '✔ 久坐、易累',
-    '✔ 肌肉少',
-    '✔ 稍微動就喘',
-    '不是不努力，是燃燒引擎弱',
-  ],
-  stress: [
-    '你的狀態比較像：「壓力影響代謝」',
-    '✔ 壓力大容易暴食',
-    '✔ 睡不好',
-    '✔ 肚子容易囤脂',
-    '不是自制力差，是荷爾蒙在影響',
-  ],
-  insulin: [
-    '你的狀態比較像：「血糖波動大」',
-    '✔ 很快餓、飯後累',
-    '✔ 腹部脂肪明顯',
-    '✔ 體重容易上下',
-    '不是吃錯，是代謝在囤積',
-  ],
-  survival: [
-    '你的狀態比較像：「身體鎖住代謝」',
-    '✔ 吃少也不瘦',
-    '✔ 體重卡關',
-    '✔ 容易復胖',
-    '不是沒效，是身體在保護你',
-  ],
-  gene: [
-    '你的狀態比較像：「代謝模式改變」',
-    '✔ 以前不會胖，現在會',
-    '✔ 脂肪集中腹部',
-    '✔ 年紀增加後變難瘦',
-    '不是基因，是被生活打開',
-  ],
+  diet: ['你的狀態比較像：「能量輸入過多但用不掉」','✔ 吃多、重口味','✔ 容易累','✔ 蔬菜攝取不足','不是吃太多，是身體不會用'],
+  exercise: ['你的狀態比較像：「燃燒能力不足」','✔ 久坐、易累','✔ 肌肉少','✔ 稍微動就喘','不是不努力，是燃燒引擎弱'],
+  stress: ['你的狀態比較像：「壓力影響代謝」','✔ 壓力大容易暴食','✔ 睡不好','✔ 肚子容易囤脂','不是自制力差，是荷爾蒙在影響'],
+  insulin: ['你的狀態比較像：「血糖波動大」','✔ 很快餓、飯後累','✔ 腹部脂肪明顯','✔ 體重容易上下','不是吃錯，是代謝在囤積'],
+  survival: ['你的狀態比較像：「身體鎖住代謝」','✔ 吃少也不瘦','✔ 體重卡關','✔ 容易復胖','不是沒效，是身體在保護你'],
+  gene: ['你的狀態比較像：「代謝模式改變」','✔ 以前不會胖，現在會','✔ 脂肪集中腹部','✔ 年紀增加後變難瘦','不是基因，是被生活打開'],
 };
 
 const LEVEL_MAP = {
@@ -85,10 +69,14 @@ module.exports = async function handler(req, res) {
     scores[group] = questions.reduce((sum, q) => sum + (answers[q] ?? 0), 0);
   }
 
+  // 實際主次（依分數排序，用於文案）
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   const [primaryKey, primaryScore]     = sorted[0];
   const [secondaryKey, secondaryScore] = sorted[1];
   const isDualPrimary = (primaryScore - secondaryScore) < 3;
+
+  // 固定15種組合（用於複製文字）
+  const [normalA, normalB] = getNormalizedPair(primaryKey, secondaryKey);
 
   const layers = [
     { lv: LEVEL_MAP[primaryKey].lv + '（主）',   desc: LEVEL_MAP[primaryKey].desc },
@@ -98,9 +86,11 @@ module.exports = async function handler(req, res) {
 
   const result = {
     headline: {
-      primary:      TYPE_LABEL[primaryKey],
-      secondary:    TYPE_LABEL[secondaryKey],
+      primary:      TYPE_LABEL[primaryKey],   // 實際主類型（文案用）
+      secondary:    TYPE_LABEL[secondaryKey], // 實際次類型（文案用）
       isDualPrimary,
+      // 固定15種複製文字
+      copyText: `我的體態屬於 主類型：${TYPE_SHORT[normalA]} 次類型：${TYPE_SHORT[normalB]}`,
     },
     scores,
     opening: [
