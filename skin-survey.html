@@ -174,6 +174,29 @@
   .q-card.unanswered { border-color: rgba(239,68,68,0.5); animation: shake 0.3s ease; }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   @media (max-width: 480px) { .q-options { grid-template-columns: repeat(2, 1fr); } .opt-label { font-size: 11px; } }
+
+  /* ── 分享按鈕 ── */
+  .share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 18px 28px;
+    font-size: 18px;
+    color: var(--gold);
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 600;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    margin-bottom: 0;
+  }}
+  .share-btn:hover {{ background: rgba(226,185,111,0.08); transform: translateY(-2px); }}
+  .share-btn:active {{ transform: translateY(0); }}
 </style>
 </head>
 <body>
@@ -391,6 +414,11 @@
         📋 複製分析結果<br>回傳到 LINE 官方
       </button>
       <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
+      <div style="margin-top: 16px;">
+        <button class="share-btn" onclick="shareResult()">
+          <span class="share-icon">↓</span> DOWNLOAD
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -544,6 +572,23 @@ function copyResult() {
     if (suc) suc.style.display = 'block';
     setTimeout(() => { btn.innerHTML = '📋 複製分析結果<br>回傳到 LINE 官方'; if (suc) suc.style.display = 'none'; }, 3000);
   });
+}
+
+function shareResult() {
+  const primary   = document.getElementById('r-primary')?.textContent || '';
+  const secondary = document.getElementById('r-secondary')?.textContent || '';
+  const shareData = {
+    title: '抗老研究室｜肌膚管理檢測',
+    text: `✨ 我剛完成了「肌膚管理檢測」！\n主類型：${primary}\n快來測測你是哪一型！`,
+    url: 'https://nulife-survey.vercel.app',
+  };
+  if (navigator.share) {
+    navigator.share(shareData);
+  } else {
+    navigator.clipboard.writeText(shareData.url).then(() => {
+      alert('連結已複製！貼到 LINE 分享給朋友吧 🎯');
+    });
+  }
 }
 function mockResult() { return {
     headline: { primary: '敏感修復型（屏障）', secondary: '水分流失型（乾燥）' },
