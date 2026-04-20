@@ -6,6 +6,7 @@
 <title>睡眠快速評估｜抗老研究室</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -349,7 +350,7 @@
       </button>
       <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
       <div style="margin-top: 16px;">
-        <button class="share-btn" onclick="shareResult()">
+        <button class="share-btn" id="download-btn" onclick="downloadResult()">
           <span class="share-icon">↓</span> DOWNLOAD
         </button>
       </div>
@@ -523,6 +524,31 @@ function copyResult() {
 }
 
 
+
+function downloadResult() {
+  const btn = document.getElementById('download-btn');
+  btn.innerHTML = '⏳ 產生圖片中...';
+  btn.disabled = true;
+
+  const el = document.getElementById('result');
+  html2canvas(el, {
+    backgroundColor: '#0a0e1a',
+    scale: 2,
+    useCORS: true,
+    logging: false,
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = '抗老研究室_睡眠管理檢測_分析結果.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+    btn.disabled = false;
+  }).catch(() => {
+    btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+    btn.disabled = false;
+    alert('下載失敗，請嘗試手動截圖');
+  });
+}
 function shareResult() {
   const primary   = document.getElementById('r-primary')?.textContent || '';
   const secondary = document.getElementById('r-secondary')?.textContent || '';
