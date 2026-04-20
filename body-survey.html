@@ -473,6 +473,7 @@ function showResult(data) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   const primary = data.headline.primary;
   const secondary = data.headline.secondary;
+  window._bodyData = data;
   document.getElementById('r-primary').textContent = primary;
   document.getElementById('r-secondary').textContent = secondary;
   document.getElementById('cta-primary').textContent = primary;
@@ -535,8 +536,7 @@ function renderLayers(id, layers) {
 function copyResult() {
   const primary = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
-  const stripBracket = s => s.replace(/（[^）]*）/g, '').trim();
-  const text = '我的體態屬於 主類型：' + stripBracket(primary) + ' 次類型：' + stripBracket(secondary);
+  const text = (window._bodyData && window._bodyData.headline.copyText) || ('我的體態屬於 主類型：' + primary + ' 次類型：' + secondary);
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
