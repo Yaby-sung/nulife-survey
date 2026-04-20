@@ -571,18 +571,33 @@ function renderLayers(id, layers) {
 function copyResult() {
   const primary   = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
-  const text = '我的免疫屬於 主類型：' + primary + ' 次類型：' + secondary;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copy-btn');
-    const suc = document.getElementById('copy-success');
-    btn.innerHTML = '✓ 已複製！';
-    if (suc) suc.style.display = 'block';
-    setTimeout(() => {
-      btn.innerHTML = '📋 複製分析結果<br>回傳到 LINE 官方';
-      if (suc) suc.style.display = 'none';
-    }, 3000);
-  });
+
+  // 去掉括號（肌膚/體態用）
+  const strip = s => s.replace(/（[^）]*）/g, '').trim();
+
+  const text = '我的免疫屬於 主類型：' + strip(primary) + ' 次類型：' + strip(secondary);
+
+  // iOS 原生分享選單
+  if (navigator.share) {
+    navigator.share({
+      title: '抗老研究室｜免疫力檢測',
+      text: text,
+    }).catch(() => {});
+  } else {
+    // 電腦版：直接複製
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      const suc = document.getElementById('copy-success');
+      btn.innerHTML = '✓ 已複製！';
+      if (suc) suc.style.display = 'block';
+      setTimeout(() => {
+        btn.innerHTML = '📋 複製分析結果<br>回傳到 LINE 官方';
+        if (suc) suc.style.display = 'none';
+      }, 3000);
+    });
+  }
 }
+
 
 
 
