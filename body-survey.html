@@ -535,7 +535,8 @@ function renderLayers(id, layers) {
 function copyResult() {
   const primary = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
-  const text = '我的體態屬於 主類型：' + primary + ' 次類型：' + secondary;
+  const stripBracket = s => s.replace(/（[^）]*）/g, '').trim();
+  const text = '我的體態屬於 主類型：' + stripBracket(primary) + ' 次類型：' + stripBracket(secondary);
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copy-btn');
     const suc = document.getElementById('copy-success');
