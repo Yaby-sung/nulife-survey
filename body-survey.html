@@ -52,16 +52,13 @@
     border-bottom: 1px solid var(--border);
     margin-bottom: 0;
   }
-  .result-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 20px; }
+  .result-eyebrow { font-size: 11px; letter-spacing: 1px; color: var(--gold); margin-bottom: 20px; }
   .primary-type {
     font-family: 'Noto Serif TC', serif;
     font-size: clamp(30px, 8vw, 46px);
     font-weight: 600;
     line-height: 1.2;
-    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--gold);
     margin-bottom: 6px;
   }
   .primary-label { font-size: 11px; letter-spacing: 2px; color: var(--text3); margin-bottom: 20px; }
@@ -198,6 +195,73 @@
   }}
   .share-btn:hover {{ background: rgba(226,185,111,0.08); transform: translateY(-2px); }}
   .share-btn:active {{ transform: translateY(0); }}
+
+  /* ── 圖片預覽 overlay ── */
+  .img-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .img-overlay.show { display: flex; }
+  .img-overlay img { max-width: 100%; max-height: 75vh; border-radius: 12px; }
+  .img-overlay-hint {
+    color: #e2b96f;
+    font-size: 15px;
+    font-family: 'Noto Sans TC', sans-serif;
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.8;
+  }
+  .img-overlay-close {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid rgba(226,185,111,0.4);
+    border-radius: 20px;
+    padding: 10px 28px;
+    color: #e2b96f;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ── 圖片預覽 Modal ── */
+  .img-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .img-modal.show { display: flex; }
+  .img-modal img { max-width: 100%; max-height: 75vh; border-radius: 12px; }
+  .img-modal-hint {
+    color: #e2b96f;
+    font-size: 15px;
+    margin-top: 16px;
+    text-align: center;
+    font-family: 'Noto Sans TC', sans-serif;
+    letter-spacing: 1px;
+  }
+  .img-modal-close {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid rgba(226,185,111,0.4);
+    border-radius: 8px;
+    color: #e2b96f;
+    font-size: 14px;
+    padding: 10px 28px;
+    cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
 </style>
 </head>
 <body>
@@ -587,47 +651,39 @@ function downloadResult() {
     scale: 2,
     useCORS: true,
     logging: false,
-  }).then(canvas => {
-    const dataUrl = canvas.toDataURL('image/png');
-    // iOS Safari 用開新視窗方式
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      const newTab = window.open();
-      newTab.document.write('<html><head><title>抗老研究室｜分析結果</title><meta name="viewport" content="width=device-width"><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:20px;} img{max-width:100%;border-radius:12px;} p{color:#e2b96f;font-family:sans-serif;font-size:14px;margin-top:16px;text-align:center;}</style></head><body>');
-      newTab.document.write('<img src="' + dataUrl + '">');
-      newTab.document.write('<p>長按圖片 → 儲存照片 即可下載</p>');
-      newTab.document.write('</body></html>');
-      newTab.document.close();
-    } else {
-      const link = document.createElement('a');
-      link.download = '抗老研究室_體態管理檢測_分析結果.png';
-      link.href = dataUrl;
-      link.click();
+  }).then(async canvas => {
+    try {
+      // 轉成 Blob
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], '抗老研究室_分析結果.png', { type: 'image/png' });
+        // 用 Web Share API 分享圖片（iOS 支援「儲存影像」）
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: '抗老研究室｜體態管理檢測',
+          });
+        } else {
+          // 電腦直接下載
+          const link = document.createElement('a');
+          link.download = '抗老研究室_體態管理檢測_分析結果.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+        btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+        btn.disabled = false;
+      }, 'image/png');
+    } catch (err) {
+      btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+      btn.disabled = false;
     }
-    btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
-    btn.disabled = false;
   }).catch(() => {
     btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
     btn.disabled = false;
-    alert('下載失敗，請嘗試手動截圖');
+    alert('產生圖片失敗，請手動截圖儲存');
   });
 }
-function shareResult() {
-  const primary   = document.getElementById('r-primary')?.textContent || '';
-  const secondary = document.getElementById('r-secondary')?.textContent || '';
-  const shareData = {
-    title: '抗老研究室｜體態管理檢測',
-    text: `🧘 我剛完成了「體態管理檢測」！\n主類型：${primary}\n快來測測你是哪一型！`,
-    url: 'https://nulife-survey.vercel.app',
-  };
-  if (navigator.share) {
-    navigator.share(shareData);
-  } else {
-    navigator.clipboard.writeText(shareData.url).then(() => {
-      alert('連結已複製！貼到 LINE 分享給朋友吧 🎯');
-    });
-  }
-}
+
+
 function mockResult() { return {
     headline: { primary: '壓力型（荷爾蒙）', secondary: '胰島素型（血糖波動）' },
     scores: { diet: 8, exercise: 6, stress: 11, insulin: 9, survival: 4, gene: 5 },
@@ -644,5 +700,19 @@ function mockResult() { return {
     lineCallToAction: ['你這次的結果，主要是「壓力型＋胰島素型」','通常會有兩個調整方向','直接把結果複製傳LINE給我就好'],
   }; }
 </script>
+
+  <!-- 圖片預覽 overlay -->
+  <div class="img-overlay" id="img-overlay">
+    <img id="result-img" src="" alt="分析結果">
+    <div class="img-overlay-hint">📱 長按圖片 → 儲存到相簿</div>
+    <button class="img-overlay-close" onclick="document.getElementById('img-overlay').classList.remove('show')">關閉</button>
+  </div>
+
+  <!-- 圖片預覽 Modal -->
+  <div class="img-modal" id="img-modal">
+    <img id="modal-img" src="" alt="分析結果">
+    <div class="img-modal-hint">👆 長按圖片 → 儲存照片</div>
+    <button class="img-modal-close" onclick="document.getElementById('img-modal').classList.remove('show')">關閉</button>
+  </div>
 </body>
 </html>
