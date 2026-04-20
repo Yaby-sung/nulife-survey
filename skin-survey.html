@@ -285,9 +285,9 @@
       <div class="q-text">皮膚容易乾、緊、脫皮</div>
       <div class="q-options" data-q="1"></div>
     </div>
-    <div class="q-card" id="card-2">
+    <div class="q-card" id="card-2" data-optional="true">
       <div class="q-num">02</div>
-      <div class="q-text">上妝容易浮粉</div>
+      <div class="q-text">上妝容易浮粉 <span style="font-size:12px;color:var(--text3);font-weight:300;">（無上妝不用填）</span></div>
       <div class="q-options" data-q="2"></div>
     </div>
     <div class="q-card" id="card-3">
@@ -525,7 +525,10 @@ function updateProgress() {
 
 async function submitSurvey() {
   const missing = [];
-  for (let i = 1; i <= TOTAL; i++) { if (answers[i] === undefined) missing.push(i); }
+  for (let i = 1; i <= TOTAL; i++) {
+    const card = document.getElementById('card-' + i);
+    if (answers[i] === undefined && !card?.dataset.optional) missing.push(i);
+  }
   if (missing.length > 0) {
     missing.forEach(i => document.getElementById(`card-${i}`)?.classList.add('unanswered'));
     document.getElementById('error-msg').style.display = 'block';
