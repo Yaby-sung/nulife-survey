@@ -178,17 +178,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
     background: transparent;
-    border: 2px solid var(--gold);
+    border: 1px solid rgba(226,185,111,0.5);
     border-radius: 50px;
-    padding: 18px 28px;
-    font-size: 18px;
-    color: var(--gold);
-    font-family: 'Noto Serif TC', serif;
-    font-weight: 600;
-    letter-spacing: 3px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: rgba(226,185,111,0.7);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 400;
+    letter-spacing: 2px;
     cursor: pointer;
     transition: background 0.2s, transform 0.15s;
     margin-bottom: 0;
@@ -481,7 +481,7 @@
       <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
       <div style="margin-top: 16px;">
         <button class="share-btn" id="download-btn" onclick="downloadResult()">
-          <span class="share-icon">↓</span> DOWNLOAD
+          ↓ 報告下載
         </button>
       </div>
     </div>
@@ -691,15 +691,15 @@ function downloadResult() {
           link.href = canvas.toDataURL('image/png');
           link.click();
         }
-        btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+        btn.innerHTML = '↓ 報告下載';
         btn.disabled = false;
       }, 'image/png');
     } catch (err) {
-      btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+      btn.innerHTML = '↓ 報告下載';
       btn.disabled = false;
     }
   }).catch(() => {
-    btn.innerHTML = '<span class="share-icon">↓</span> DOWNLOAD';
+    btn.innerHTML = '↓ 報告下載';
     btn.disabled = false;
     alert('產生圖片失敗，請手動截圖儲存');
   });
