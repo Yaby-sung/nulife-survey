@@ -629,8 +629,16 @@ function renderLayers(id, layers) {
 function copyResult() {
   const primary   = document.getElementById('r-primary').textContent;
   const secondary = document.getElementById('r-secondary').textContent;
+  // 固定15種組合，字典序小的永遠在前
+  const TYPE_ORDER = ['飲食型', '運動型', '壓力型', '胰島素型', '保命機制型', '基因表現型'];
   const strip = s => s.replace(/（[^）]*）/g, '').trim();
-  const text = '我的體態屬於 主類型：' + strip(primary) + ' 次類型：' + strip(secondary);
+  const pShort = strip(primary);
+  const sShort = strip(secondary);
+  const pIdx = TYPE_ORDER.indexOf(pShort);
+  const sIdx = TYPE_ORDER.indexOf(sShort);
+  const normalA = (pIdx <= sIdx) ? pShort : sShort;
+  const normalB = (pIdx <= sIdx) ? sShort : pShort;
+  const text = '我的體態屬於 主類型：' + normalA + ' 次類型：' + normalB;
 
   if (navigator.share) {
     navigator.share({
