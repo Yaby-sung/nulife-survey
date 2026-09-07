@@ -417,6 +417,7 @@
         💬 傳結果給客服<br>（自動帶入，按送出即可）
       </button>
       <div class="copy-success" id="copy-success">✓ 已帶入 LINE，按送出就可以囉 🎯</div>
+      <div id="liff-mode" style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:1px"></div>
       <div style="margin-top: 16px;">
         <button class="share-btn" id="download-btn" onclick="downloadResult()">
           ↓ 報告下載
@@ -581,20 +582,19 @@ function copyResult() {
   const secondary = document.getElementById('r-secondary').textContent;
   const strip = s => s.replace(/（[^）]*）/g, '').trim();
   const text = '我的情緒屬於 主類型：' + primary + ' 次類型：' + secondary;
-  // 1) 先複製到剪貼簿（備援）
   try { navigator.clipboard.writeText(text); } catch (e) {}
 
   var btn = document.getElementById('copy-btn');
   var suc = document.getElementById('copy-success');
 
-  function fallbackToLineUrl() {
+  function fallbackToLineUrl(reason) {
     if (btn) btn.innerHTML = '\u2713 \u958b\u555f LINE \u4e2d\u22ef';
     if (suc) suc.style.display = 'block';
+    if (window.__liffMode) window.__liffMode('\u700f\u89bd\u5668\u6a21\u5f0f' + (reason ? ' / ' + reason : ''));
     window.location.href = 'https://line.me/R/oaMessage/@890tjgoj/?' + encodeURIComponent(text);
   }
 
-  // 2) 在 LINE 內（LIFF）：直接送出訊息並關閉視窗
-  if (window.liff && liff.isInClient && liff.isInClient()) {
+  function sendViaLiff() {
     if (btn) btn.innerHTML = '\u50b3\u9001\u4e2d\u22ef';
     liff.sendMessages([{ type: 'text', text: text }])
       .then(function () {
@@ -605,13 +605,22 @@ function copyResult() {
         }
         setTimeout(function () { liff.closeWindow(); }, 700);
       })
-      .catch(function () { fallbackToLineUrl(); });
-    return;
+      .catch(function (e) {
+        fallbackToLineUrl('send: ' + (e && e.message ? e.message : e));
+      });
   }
 
-  // 3) 非 LINE 環境：退回原本的 oaMessage 連結
-  fallbackToLineUrl();
+  if (!window.liff) { fallbackToLineUrl('SDK \u672a\u8f09\u5165'); return; }
+
+  var ready = window.__liffReady || Promise.resolve();
+  ready.then(function () {
+    if (liff.isInClient && liff.isInClient()) { sendViaLiff(); }
+    else { fallbackToLineUrl('\u975e LINE \u5167\u958b\u555f'); }
+  }).catch(function (e) {
+    fallbackToLineUrl('init: ' + (e && e.message ? e.message : e));
+  });
 }
+
 
 
 
@@ -756,11 +765,22 @@ function mockResult() {
   render();
 })();
 
+
 /* ===== LIFF 初始化 ===== */
-(function () {
-  if (!window.liff) return;
-  liff.init({ liffId: '2011478065-DawjFmxE' }).catch(function () {});
-})();
+window.__liffMode = function (t) {
+  var el = document.getElementById('liff-mode');
+  if (el) el.textContent = '\u2699 ' + t;
+};
+if (window.liff) {
+  window.__liffReady = liff.init({ liffId: '2011478065-DawjFmxE' });
+  window.__liffReady.then(function () {
+    window.__liffMode(liff.isInClient() ? 'LINE \u5167\uff08\u53ef\u76f4\u63a5\u50b3\u9001\uff09' : '\u700f\u89bd\u5668\u6a21\u5f0f');
+  }).catch(function (e) {
+    window.__liffMode('init \u5931\u6557\uff1a' + (e && e.message ? e.message : e));
+  });
+} else {
+  window.__liffMode('SDK \u672a\u8f09\u5165');
+}
 </script>
 
   <!-- 圖片預覽 overlay -->
