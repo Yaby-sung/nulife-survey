@@ -262,6 +262,13 @@
     cursor: pointer;
     font-family: 'Noto Sans TC', sans-serif;
   }
+
+  .q-card { min-height: 190px; }
+  .step-nav { display:flex; gap:10px; margin: 4px 0 18px; }
+  .step-btn { flex:1; background:transparent; border:1px solid var(--border); border-radius:var(--radius); padding:13px; color:var(--text2); font-size:14px; font-family:inherit; cursor:pointer; transition:all .2s; }
+  .step-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--text); }
+  .step-btn:disabled { opacity:.25; cursor:default; }
+  .step-pos { text-align:center; font-size:12px; color:var(--text3); letter-spacing:2px; margin-bottom:6px; }
 </style>
 </head>
 <body>
@@ -474,11 +481,11 @@
         </div>
       </div>
       <div class="line-cta-lines" id="r-line-cta"></div>
-      <div class="cta-instruction">👇 點擊下方按鈕，複製結果後傳給我們</div>
+      <div class="cta-instruction">👇 點擊下方按鈕，直接把結果傳給我們</div>
       <button class="line-cta-copy" id="copy-btn" onclick="copyResult()">
-        📋 複製分析結果<br>回傳到抗老研究室
+        💬 傳結果給客服<br>（自動帶入，按送出即可）
       </button>
-      <div class="copy-success" id="copy-success">✓ 已複製！請開啟 LINE 貼上傳給我們 🎯</div>
+      <div class="copy-success" id="copy-success">✓ 已帶入 LINE，按送出就可以囉 🎯</div>
       <div style="margin-top: 16px;">
         <button class="share-btn" id="download-btn" onclick="downloadResult()">
           ↓ 報告下載
@@ -671,25 +678,24 @@ function copyResult() {
   const normalA = (pIdx <= sIdx) ? pShort : sShort;
   const normalB = (pIdx <= sIdx) ? sShort : pShort;
   const text = '我的體態屬於 主類型：' + normalA + ' 次類型：' + normalB;
+  // 1) 先複製到剪貼簿（備援，客人也可自行貼上）
+  try { navigator.clipboard.writeText(text); } catch (e) {}
 
-  if (navigator.share) {
-    navigator.share({
-      title: '抗老研究室｜體態管理檢測',
-      text: text,
-    }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copy-btn');
-      const suc = document.getElementById('copy-success');
-      btn.innerHTML = '✓ 已複製！';
-      if (suc) suc.style.display = 'block';
-      setTimeout(() => {
-        btn.innerHTML = '📋 複製分析結果<br>回傳到抗老研究室';
-        if (suc) suc.style.display = 'none';
-      }, 3000);
-    });
-  }
+  // 2) 直接開啟 LINE 並帶入結果文字
+  const lineUrl = 'https://line.me/R/oaMessage/@890tjgoj/?' + encodeURIComponent(text);
+
+  const btn = document.getElementById('copy-btn');
+  const suc = document.getElementById('copy-success');
+  if (btn) btn.innerHTML = '✓ 開啟 LINE 中⋯';
+  if (suc) suc.style.display = 'block';
+  setTimeout(() => {
+    if (btn) btn.innerHTML = '💬 傳結果給客服<br>（自動帶入，按送出即可）';
+    if (suc) suc.style.display = 'none';
+  }, 3000);
+
+  window.location.href = lineUrl;
 }
+
 
 
 
@@ -753,6 +759,84 @@ function mockResult() { return {
     adjustDirection: ['① 從「基礎代謝修復」開始 → 讓身體能運作','② 從「血糖／壓力調整」開始 → 讓脂肪不再囤積','你比較有感的是哪一個？'],
     lineCallToAction: ['你這次的結果，主要是「壓力型＋胰島素型」','通常會有兩個調整方向','直接把結果複製傳LINE給我就好'],
   }; }
+
+/* ===== 單題模式：一次顯示一題，作答後自動換頁 ===== */
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.q-card'));
+  if (!cards.length) return;
+  var submitBtn = document.querySelector('.submit-btn');
+  var errorMsg  = document.getElementById('error-msg');
+  var idx = 0;
+
+  var pos = document.createElement('div');
+  pos.className = 'step-pos';
+  cards[0].parentNode.insertBefore(pos, cards[0]);
+
+  var nav = document.createElement('div');
+  nav.className = 'step-nav';
+  nav.innerHTML = '<button type="button" class="step-btn" id="step-prev">\u2190 \u4e0a\u4e00\u984c</button>'
+                + '<button type="button" class="step-btn" id="step-next">\u4e0b\u4e00\u984c \u2192</button>';
+  submitBtn.parentNode.insertBefore(nav, submitBtn);
+
+  var prevBtn = document.getElementById('step-prev');
+  var nextBtn = document.getElementById('step-next');
+
+  function answered(i) {
+    var card = cards[i];
+    return !!card.querySelector('.opt-btn.selected');
+  }
+
+  function render() {
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].style.display = (i === idx) ? 'block' : 'none';
+    }
+    pos.textContent = (idx + 1) + ' / ' + cards.length;
+    prevBtn.disabled = (idx === 0);
+    nextBtn.disabled = (idx === cards.length - 1) || !answered(idx);
+    var last = (idx === cards.length - 1);
+    submitBtn.style.display = last ? 'block' : 'none';
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (window.scrollY > 120) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function go(n) {
+    if (n < 0 || n >= cards.length) return;
+    idx = n;
+    render();
+  }
+
+  prevBtn.addEventListener('click', function () { go(idx - 1); });
+  nextBtn.addEventListener('click', function () { go(idx + 1); });
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.opt-btn') : null;
+    if (!btn) return;
+    var card = btn.closest('.q-card');
+    if (!card) return;
+    var i = cards.indexOf(card);
+    if (i !== idx) return;
+    setTimeout(function () {
+      if (idx < cards.length - 1) { go(idx + 1); } else { render(); }
+    }, 240);
+  });
+
+  var origSubmit = window.submitSurvey;
+  window.submitSurvey = function () {
+    for (var i = 0; i < cards.length; i++) {
+      if (!answered(i)) {
+        go(i);
+        if (errorMsg) {
+          errorMsg.style.display = 'block';
+          errorMsg.textContent = '\u9019\u4e00\u984c\u9084\u6c92\u9078 \u2726';
+        }
+        return;
+      }
+    }
+    return origSubmit.apply(this, arguments);
+  };
+
+  render();
+})();
 </script>
 
   <!-- 圖片預覽 overlay -->
