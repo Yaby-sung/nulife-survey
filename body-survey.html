@@ -270,6 +270,7 @@
   .step-btn:disabled { opacity:.25; cursor:default; }
   .step-pos { text-align:center; font-size:12px; color:var(--text3); letter-spacing:2px; margin-bottom:6px; }
 </style>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
 <div id="survey">
@@ -678,23 +679,38 @@ function copyResult() {
   const normalA = (pIdx <= sIdx) ? pShort : sShort;
   const normalB = (pIdx <= sIdx) ? sShort : pShort;
   const text = '我的體態屬於 主類型：' + normalA + ' 次類型：' + normalB;
-  // 1) 先複製到剪貼簿（備援，客人也可自行貼上）
+  // 1) 先複製到剪貼簿（備援）
   try { navigator.clipboard.writeText(text); } catch (e) {}
 
-  // 2) 直接開啟 LINE 並帶入結果文字
-  const lineUrl = 'https://line.me/R/oaMessage/@890tjgoj/?' + encodeURIComponent(text);
+  var btn = document.getElementById('copy-btn');
+  var suc = document.getElementById('copy-success');
 
-  const btn = document.getElementById('copy-btn');
-  const suc = document.getElementById('copy-success');
-  if (btn) btn.innerHTML = '✓ 開啟 LINE 中⋯';
-  if (suc) suc.style.display = 'block';
-  setTimeout(() => {
-    if (btn) btn.innerHTML = '💬 傳結果給客服<br>（自動帶入，按送出即可）';
-    if (suc) suc.style.display = 'none';
-  }, 3000);
+  function fallbackToLineUrl() {
+    if (btn) btn.innerHTML = '\u2713 \u958b\u555f LINE \u4e2d\u22ef';
+    if (suc) suc.style.display = 'block';
+    window.location.href = 'https://line.me/R/oaMessage/@890tjgoj/?' + encodeURIComponent(text);
+  }
 
-  window.location.href = lineUrl;
+  // 2) 在 LINE 內（LIFF）：直接送出訊息並關閉視窗
+  if (window.liff && liff.isInClient && liff.isInClient()) {
+    if (btn) btn.innerHTML = '\u50b3\u9001\u4e2d\u22ef';
+    liff.sendMessages([{ type: 'text', text: text }])
+      .then(function () {
+        if (btn) btn.innerHTML = '\u2713 \u5df2\u50b3\u9001\uff01';
+        if (suc) {
+          suc.style.display = 'block';
+          suc.textContent = '\u2713 \u5df2\u50b3\u7d66\u5ba2\u670d\uff0c\u6b63\u5728\u56de\u5230\u804a\u5929\u5ba4\u22ef';
+        }
+        setTimeout(function () { liff.closeWindow(); }, 700);
+      })
+      .catch(function () { fallbackToLineUrl(); });
+    return;
+  }
+
+  // 3) 非 LINE 環境：退回原本的 oaMessage 連結
+  fallbackToLineUrl();
 }
+
 
 
 
@@ -836,6 +852,12 @@ function mockResult() { return {
   };
 
   render();
+})();
+
+/* ===== LIFF 初始化 ===== */
+(function () {
+  if (!window.liff) return;
+  liff.init({ liffId: '2011478065-DawjFmxE' }).catch(function () {});
 })();
 </script>
 
