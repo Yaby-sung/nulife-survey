@@ -497,7 +497,7 @@ var sleepLineContextReady = false; // 只有「在 LINE Client 內且已登入�
 var sleepLinePushState = 'idle';   // idle → pending → sent（失敗會回到 idle，允許之後重試）
 // 環境只依目前 URL 的 miniapp query parameter 判斷，不使用任何 storage
 var sleepIsPublishedMiniApp = new URLSearchParams(window.location.search).get('miniapp') === 'published';
-var SLEEP_MINIAPP_LIFF_ID = '2011478065-DawjFmxE';
+var SLEEP_MINIAPP_LIFF_ID = '2011508650-hH2ejWdu';
 
 try {
   liff.init({ liffId: SLEEP_MINIAPP_LIFF_ID })
@@ -582,7 +582,7 @@ function sendSleepResultLineTrigger(primaryKey) {
 
 // 抗老研究室官方 LINE OA 的 Basic ID。與 skin-survey.html 共用同一個官方帳號 Basic ID，
 // 因為目前 sleep/immune/skin 都是同一個 LIFF Channel（同一組 Developing/Published ID）。
-var SLEEP_LINE_OA_BASIC_ID = '@890tjgoj';
+var SLEEP_LINE_OA_BASIC_ID = '@080wllvx';
 
 // 回到官方 LINE：直接沿用 skin-survey.html 已在 Published LINE MINI App iPhone 實機驗證的 backToLine()：
 // 1) 真的在 LIFF / LINE Client 內（liff.isInClient() === true）時，優先呼叫官方 liff.closeWindow()

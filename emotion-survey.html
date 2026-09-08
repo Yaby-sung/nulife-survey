@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -427,6 +428,44 @@ const OPTIONS = [
   { score: 3, label: '幾乎每天都會' },
 ];
 const answers = {};
+
+// ---- LINE LIFF：附加功能，失敗完全不影響問卷本身 ----
+var emotionLineContextReady = false;
+var EMOTION_MINIAPP_LIFF_ID = '2011508650-fFqMG5mS';
+var EMOTION_LINE_OA_BASIC_ID = '@080wllvx';
+
+try {
+  liff.init({ liffId: EMOTION_MINIAPP_LIFF_ID })
+    .then(function () {
+      emotionLineContextReady = !!(liff.isInClient() && liff.isLoggedIn());
+    })
+    .catch(function () { emotionLineContextReady = false; });
+} catch (e) { emotionLineContextReady = false; }
+
+var EMOTION_RESULT_TRIGGER_TEXT_BY_LABEL = {
+  '壓力型失衡': '查看我的情緒解碼結果｜壓力型失衡',
+  '發炎型情緒': '查看我的情緒解碼結果｜發炎型情緒',
+  '結構耗損型': '查看我的情緒解碼結果｜結構耗損型',
+};
+
+var emotionTriggerSent = false;
+function sendEmotionResultLineTrigger(primaryLabel) {
+  if (!emotionLineContextReady) return;
+  if (emotionTriggerSent) return;
+  var clean = String(primaryLabel || '').replace(/（[^）]*）/g, '').trim();
+  var triggerText = EMOTION_RESULT_TRIGGER_TEXT_BY_LABEL[clean];
+  if (!triggerText) return;
+  emotionTriggerSent = true;
+  liff.sendMessages([{ type: 'text', text: triggerText }])
+    .then(function () {
+      console.log('[emotion LINE trigger] succeeded: ' + triggerText);
+    })
+    .catch(function (err) {
+      emotionTriggerSent = false;
+      console.error('[emotion LINE trigger] failed: ' + (err && err.message), err);
+    });
+}
+
 const RADAR_LABELS = ['壓力型失衡', '發炎型情緒', '結構耗損型'];
 const RADAR_KEYS   = Object.keys({stress: 12, inflammation: 9, structure: 5});
 
@@ -503,6 +542,8 @@ function showResult(data) {
   document.getElementById('r-secondary').textContent = secondary;
   document.getElementById('cta-primary').textContent   = primary;
   document.getElementById('cta-secondary').textContent = secondary;
+
+  sendEmotionResultLineTrigger(primary);
 
   const s = data.scores;
   const vals = RADAR_KEYS.map(k => typeof s[k] === 'object' ? s[k].score : (s[k] ?? 0));

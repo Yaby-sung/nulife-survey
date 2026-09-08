@@ -500,7 +500,7 @@ var immuneLineContextReady = false; // 只有「在 LINE Client 內且已登入�
 var immuneLinePushState = 'idle';   // idle → pending → sent（失敗會回到 idle，允許之後重試）
 // 環境只依目前 URL 的 miniapp query parameter 判斷，不使用任何 storage
 var immuneIsPublishedMiniApp = new URLSearchParams(window.location.search).get('miniapp') === 'published';
-var IMMUNE_MINIAPP_LIFF_ID = '2011478065-YXsXqatv';
+var IMMUNE_MINIAPP_LIFF_ID = '2011508650-igRBrUwQ';
 
 try {
   liff.init({ liffId: IMMUNE_MINIAPP_LIFF_ID })
@@ -585,7 +585,7 @@ function sendImmuneResultLineTrigger(primaryKey) {
 
 // 抗老研究室官方 LINE OA 的 Basic ID。與 skin/sleep-survey.html 共用同一個官方帳號 Basic ID，
 // 因為目前 sleep/immune/skin 都是同一個 LIFF Channel（同一組 Developing/Published ID）。
-var IMMUNE_LINE_OA_BASIC_ID = '@890tjgoj';
+var IMMUNE_LINE_OA_BASIC_ID = '@080wllvx';
 
 // 回到官方 LINE：直接沿用 sleep-survey.html / skin-survey.html 已在 Published LINE MINI App
 // iPhone 實機驗證的 backToLine()：
