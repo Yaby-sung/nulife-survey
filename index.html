@@ -2,6 +2,15 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<script>
+  // LIFF primary redirect 中繼判斷：只看 liff.state 這個 query key 是否存在，不讀取/不解析其內容。
+  // 必須在 body 開始 render 前同步執行，避免首頁內容閃現。
+  try {
+    if (new URLSearchParams(window.location.search).has('liff.state')) {
+      document.documentElement.classList.add('liff-redirecting');
+    }
+  } catch (e) {}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>抗老研究室｜3分鐘健康檢測</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
@@ -255,7 +264,25 @@
     letter-spacing: 1px;
     line-height: 2;
   }
+
+  /* LIFF primary redirect 中繼過渡：只在 liff.state 存在時生效，避免首頁內容閃現 */
+  html.liff-redirecting .wrap { display: none; }
+  html.liff-redirecting::after {
+    content: '正在開啟健康解碼…';
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--text2);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    z-index: 9999;
+  }
 </style>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
 
@@ -344,5 +371,28 @@
 
 </div>
 
+<script>
+  // LINE MINI App Endpoint 根頁：只負責完成 LIFF 初始化交握（primary/secondary redirect），
+  // 不做登入、不取 ID token、不建立 LINE 相關 UI。失敗一律安靜跳過，不影響首頁本身。
+  // 環境只依目前 URL 的 miniapp query parameter 判斷，不使用任何 storage，不讀取 liff.state 內容。
+  var isPublishedMiniApp = new URLSearchParams(window.location.search).get('miniapp') === 'published';
+  var MINIAPP_LIFF_ID = '2011478065-ztaaGZRh';
+  function revealRootPage() {
+    document.documentElement.classList.remove('liff-redirecting');
+  }
+  try {
+    if (window.liff) {
+      liff.init({ liffId: MINIAPP_LIFF_ID }).catch(function () {
+        console.warn('[LINE init] LIFF initialization skipped');
+        revealRootPage();
+      });
+    } else {
+      revealRootPage();
+    }
+  } catch (e) {
+    console.warn('[LINE init] LIFF initialization skipped');
+    revealRootPage();
+  }
+</script>
 </body>
 </html>

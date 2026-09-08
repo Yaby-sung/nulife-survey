@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFF POC</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 16px; line-height: 1.6; color: #222; }
+  h2 { font-size: 18px; margin-bottom: 12px; }
+  .row { margin-bottom: 8px; }
+  .label { font-weight: bold; }
+  .ok { color: #1a7f37; }
+  .fail { color: #c0392b; }
+  button { padding: 10px 20px; font-size: 16px; margin-top: 12px; }
+  pre { background: #f2f2f2; padding: 8px; white-space: pre-wrap; word-break: break-all; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h2>LIFF POC 測試頁（僅供內部測試，不接正式問卷）</h2>
+  <div id="status">初始化中…</div>
+  <div id="result"></div>
+
+  <script>
+    var statusEl = document.getElementById('status');
+    var resultEl = document.getElementById('result');
+
+    function row(label, value) {
+      var div = document.createElement('div');
+      div.className = 'row';
+      div.innerHTML = '<span class="label">' + label + '：</span>' + value;
+      return div;
+    }
+
+    liff.init({ liffId: "2011409968-F92mYk3n" })
+      .then(function () {
+        statusEl.innerHTML = '<span class="ok">✅ LIFF 初始化成功</span>';
+
+        var isInClient = liff.isInClient();
+        var isLoggedIn = liff.isLoggedIn();
+
+        resultEl.appendChild(row('liff.isInClient()', isInClient));
+        resultEl.appendChild(row('liff.isLoggedIn()', isLoggedIn));
+
+        if (isLoggedIn) {
+          var idToken = null;
+          var gotToken = false;
+          try {
+            idToken = liff.getIDToken();
+            gotToken = !!idToken;
+          } catch (e) {
+            gotToken = false;
+          }
+          resultEl.appendChild(row('是否成功取得 ID token', gotToken ? '✅ 是' : '❌ 否'));
+
+          if (gotToken) {
+            try {
+              var decoded = liff.getDecodedIDToken();
+              resultEl.appendChild(row('Decoded ID Token（僅畫面顯示，不會傳送到任何後端、不會儲存）', ''));
+              var pre = document.createElement('pre');
+              pre.textContent = 'sub（LINE userId）: ' + (decoded && decoded.sub ? decoded.sub : '（無法取得 sub）');
+              resultEl.appendChild(pre);
+            } catch (e) {
+              resultEl.appendChild(row('Decoded ID Token 解析', '<span class="fail">失敗：' + e.message + '</span>'));
+            }
+
+            // ---- POC B：後端驗證 LINE 身分 ----
+            var verifyBtn = document.createElement('button');
+            verifyBtn.textContent = '後端驗證 LINE 身分';
+            var verifyResultEl = document.createElement('div');
+            verifyResultEl.id = 'verify-result';
+            var pocCEl = document.createElement('div');
+            pocCEl.id = 'poc-c';
+
+            verifyBtn.onclick = function () {
+              verifyBtn.disabled = true;
+              verifyResultEl.innerHTML = '驗證中…';
+              pocCEl.innerHTML = '';
+
+              fetch('/api/liff-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken }),
+              })
+                .then(function (res) {
+                  return res.json().then(function (data) {
+                    return { status: res.status, data: data };
+                  });
+                })
+                .then(function (result) {
+                  verifyBtn.disabled = false;
+                  if (result.data && result.data.ok) {
+                    verifyResultEl.innerHTML = '';
+                    verifyResultEl.appendChild(row('後端驗證結果', '<span class="ok">✅ 後端 LINE 身分驗證成功</span>'));
+                    verifyResultEl.appendChild(row('Verified userId', result.data.userId));
+                    verifyResultEl.appendChild(row('aud', result.data.aud));
+                    renderPocC();
+                  } else {
+                    verifyResultEl.innerHTML = '';
+                    verifyResultEl.appendChild(row('後端驗證結果', '<span class="fail">❌ 後端 LINE 身分驗證失敗</span>'));
+                    verifyResultEl.appendChild(row('錯誤訊息', (result.data && result.data.error) || ('HTTP ' + result.status)));
+                  }
+                })
+                .catch(function (err) {
+                  verifyBtn.disabled = false;
+                  verifyResultEl.innerHTML = '';
+                  verifyResultEl.appendChild(row('後端驗證結果', '<span class="fail">❌ 後端 LINE 身分驗證失敗</span>'));
+                  verifyResultEl.appendChild(row('錯誤訊息', '網路或伺服器錯誤'));
+                });
+            };
+
+            // ---- POC C：模擬測驗完成並 Push 回 OA（只有 POC B 驗證成功後才會出現此按鈕）----
+            function renderPocC() {
+              pocCEl.innerHTML = '';
+
+              var pushBtn = document.createElement('button');
+              pushBtn.textContent = '模擬測驗完成並 Push 回 OA';
+              var pushResultEl = document.createElement('div');
+              pushResultEl.id = 'push-result';
+
+              pushBtn.onclick = function () {
+                pushBtn.disabled = true;
+                pushResultEl.innerHTML = '傳送中…';
+
+                var freshIdToken = liff.getIDToken();
+
+                fetch('/api/liff-push-poc', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ idToken: freshIdToken }),
+                })
+                  .then(function (res) {
+                    return res.json().then(function (data) {
+                      return { status: res.status, data: data };
+                    });
+                  })
+                  .then(function (result) {
+                    pushBtn.disabled = false;
+                    pushResultEl.innerHTML = '';
+                    if (result.data && result.data.ok) {
+                      pushResultEl.appendChild(row('Push 結果', '<span class="ok">✅ Messaging API Push 已送出</span>'));
+                      pushResultEl.appendChild(row('提示', '請回到「抗老研究室」LINE 聊天室確認是否收到測試結果。'));
+                    } else {
+                      pushResultEl.appendChild(row('Push 結果', '<span class="fail">❌ Messaging API Push 失敗</span>'));
+                      pushResultEl.appendChild(row('錯誤代碼', (result.data && result.data.error) || ('HTTP ' + result.status)));
+                    }
+                  })
+                  .catch(function (err) {
+                    pushBtn.disabled = false;
+                    pushResultEl.innerHTML = '';
+                    pushResultEl.appendChild(row('Push 結果', '<span class="fail">❌ Messaging API Push 失敗</span>'));
+                    pushResultEl.appendChild(row('錯誤代碼', '網路或伺服器錯誤'));
+                  });
+              };
+
+              pocCEl.appendChild(pushBtn);
+              pocCEl.appendChild(pushResultEl);
+            }
+
+            resultEl.appendChild(verifyBtn);
+            resultEl.appendChild(verifyResultEl);
+            resultEl.appendChild(pocCEl);
+          }
+        } else {
+          resultEl.appendChild(row('是否成功取得 ID token', '❌ 否（尚未登入）'));
+          var btn = document.createElement('button');
+          btn.textContent = 'LINE 登入';
+          btn.onclick = function () { liff.login(); };
+          resultEl.appendChild(btn);
+        }
+      })
+      .catch(function (err) {
+        statusEl.innerHTML = '<span class="fail">❌ LIFF 初始化失敗</span>';
+        var pre = document.createElement('pre');
+        pre.textContent =
+          'error code: ' + (err && err.code ? err.code : '（無）') + '\n' +
+          'error message: ' + (err && err.message ? err.message : String(err));
+        resultEl.appendChild(pre);
+      });
+  </script>
+</body>
+</html>
